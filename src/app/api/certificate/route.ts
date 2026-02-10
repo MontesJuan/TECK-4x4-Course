@@ -1,7 +1,6 @@
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { PDFDocument, rgb } from "pdf-lib"
-import QRCode from "qrcode"
 import fs from "fs"
 import path from "path"
 import { NextResponse } from "next/server"
@@ -55,25 +54,9 @@ export async function GET(req: Request) {
         color: rgb(0, 0, 0),
     })
 
-    // Generate QR
-    // "QR personal con un link a una planilla de google sheets con sus calificaciones personales"
-    // I don't have the sheet link per user logic yet.
-    // I'll point to a placeholder or the general verification URL.
-    // Since I don't have the sheet URL in DB, I'll use a placeholder.
-    const qrData = `https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID_HERE`
-    const qrDataUrl = await QRCode.toDataURL(qrData)
-    const qrImage = await pdfDoc.embedPng(qrDataUrl)
-
-    firstPage.drawImage(qrImage, {
-        x: width - 150,
-        y: 50,
-        width: 100,
-        height: 100,
-    })
-
     const pdfBytes = await pdfDoc.save()
 
-    return new NextResponse(pdfBytes, {
+    return new NextResponse(Buffer.from(pdfBytes), {
         headers: {
             "Content-Type": "application/pdf",
             "Content-Disposition": `attachment; filename="Certificado_${user.surname}.pdf"`,

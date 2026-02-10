@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 
-export default async function ModuleQuestionsPage({ params }: { params: { moduleId: string } }) {
+export default async function ModuleQuestionsPage({ params }: { params: Promise<{ moduleId: string }> }) {
+    const { moduleId } = await params;
     const moduleData = await prisma.module.findUnique({
-        where: { id: params.moduleId },
+        where: { id: moduleId },
         include: {
             questions: {
                 include: { options: true }
@@ -20,7 +21,7 @@ export default async function ModuleQuestionsPage({ params }: { params: { module
         <div className="space-y-6">
             <div className="flex items-center gap-4">
                 <Button variant="ghost" asChild>
-                    <Link href={`/admin/modules/${params.moduleId}`}>
+                    <Link href={`/admin/modules/${moduleId}`}>
                         <ArrowLeft className="h-4 w-4 mr-2" /> Volver
                     </Link>
                 </Button>

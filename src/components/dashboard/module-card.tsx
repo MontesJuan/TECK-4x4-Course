@@ -17,7 +17,7 @@ export const ModuleCard = ({ id, title, description, order, type }: ModuleCardPr
     const isCompleted = type === "COMPLETED"
 
     return (
-        <Card className={`w-full ${isLocked ? "opacity-75 bg-slate-100" : "hover:shadow-lg transition-shadow"}`}>
+        <Card className={`w-full ${isLocked ? "opacity-50 grayscale bg-muted/20 border-white/5" : "hover:border-primary/50 hover:shadow-lg transition-all duration-300 bg-card"}`}>
             <CardHeader>
                 <div className="flex justify-between items-start">
                     <Badge variant={isCompleted ? "default" : (isLocked ? "secondary" : "outline")}>

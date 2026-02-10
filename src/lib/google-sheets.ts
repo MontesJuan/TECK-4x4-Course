@@ -24,24 +24,55 @@ export const addToSheet = async (userData: any) => {
         const doc = new GoogleSpreadsheet(SPREADSHEET_ID, serviceAccountAuth);
 
         await doc.loadInfo();
-        const sheet = doc.sheetsByIndex[0]; // Assume first sheet
+        const sheet = doc.sheetsByIndex[0];
+        await sheet.loadHeaderRow(3); // Headers at Row 3
 
-        await sheet.addRow({
-            Item: new Date().toISOString(), // Timestamp? Prompy says "Item"
-            Apellido: userData.surname,
-            Nombre: userData.name,
-            "CUIL/RUT": userData.cuil,
-            Teléfono: userData.phone,
-            Email: userData.email,
-            Empresa: userData.company,
-            Puesto: userData.position,
-            "Tipo de Licencia": userData.licenseType,
-            Vencimiento: userData.licenseExpiry.toISOString().split('T')[0],
-            País: userData.country,
-            Provincia: userData.province,
-            Localidad: userData.city,
-            Estado: "PENDIENTE" // Add status just in case
-        });
+        const rows = await sheet.getRows();
+        let targetRow;
+
+        // Find first empty row (where Apellido is missing)
+        for (const row of rows) {
+            if (!row.get('Apellido')) {
+                targetRow = row;
+                break;
+            }
+        }
+
+        if (targetRow) {
+            targetRow.assign({
+                "Apellido": userData.surname,
+                "Nombre": userData.name,
+                "CUIL/RUT": userData.cuil,
+                "Teléfono": userData.phone,
+                "Email": userData.email,
+                "Empresa": userData.company,
+                "Puesto": userData.position,
+                "Tipo de Licencia": userData.licenseType,
+                "Vencimiento": userData.licenseExpiry.toISOString().split('T')[0],
+                "País": userData.country,
+                "Provincia": userData.province,
+                "Localidad": userData.city,
+                "Estado": "PENDIENTE"
+            });
+            await targetRow.save();
+        } else {
+            // Fallback if no empty rows found
+            await sheet.addRow({
+                "Apellido": userData.surname,
+                "Nombre": userData.name,
+                "CUIL/RUT": userData.cuil,
+                "Teléfono": userData.phone,
+                "Email": userData.email,
+                "Empresa": userData.company,
+                "Puesto": userData.position,
+                "Tipo de Licencia": userData.licenseType,
+                "Vencimiento": userData.licenseExpiry.toISOString().split('T')[0],
+                "País": userData.country,
+                "Provincia": userData.province,
+                "Localidad": userData.city,
+                "Estado": "PENDIENTE"
+            });
+        }
 
     } catch (e) {
         console.error("Error syncing to Google Sheet:", e);

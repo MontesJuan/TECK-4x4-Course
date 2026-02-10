@@ -14,7 +14,7 @@ const ModuleSchema = z.object({
 
 export const createModule = async (values: z.infer<typeof ModuleSchema>) => {
     const session = await auth()
-    if (session?.user.role !== "ADMIN") return { error: "Unauthorized" }
+    if (!session?.user || session.user.role !== "ADMIN") return { error: "Unauthorized" }
 
     const validated = ModuleSchema.safeParse(values)
     if (!validated.success) return { error: "Invalid fields" }
@@ -29,7 +29,7 @@ export const createModule = async (values: z.infer<typeof ModuleSchema>) => {
 
 export const updateModule = async (id: string, values: z.infer<typeof ModuleSchema>) => {
     const session = await auth()
-    if (session?.user.role !== "ADMIN") return { error: "Unauthorized" }
+    if (!session?.user || session.user.role !== "ADMIN") return { error: "Unauthorized" }
 
     const validated = ModuleSchema.safeParse(values)
     if (!validated.success) return { error: "Invalid fields" }
@@ -46,7 +46,7 @@ export const updateModule = async (id: string, values: z.infer<typeof ModuleSche
 // TODO: Materials and Questions CRUD
 export const addMaterial = async (moduleId: string, title: string, fileUrl: string) => {
     const session = await auth()
-    if (session?.user.role !== "ADMIN") return { error: "Unauthorized" }
+    if (!session?.user || session.user.role !== "ADMIN") return { error: "Unauthorized" }
 
     await prisma.material.create({
         data: {

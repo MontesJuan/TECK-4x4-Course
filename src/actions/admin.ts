@@ -9,7 +9,7 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 
 export const approveUser = async (userId: string) => {
     const session = await auth()
-    if (session?.user.role !== "ADMIN") return { error: "Unauthorized" }
+    if (!session?.user || session.user.role !== "ADMIN") return { error: "Unauthorized" }
 
     await prisma.user.update({
         where: { id: userId },
@@ -37,7 +37,7 @@ export const approveUser = async (userId: string) => {
 
 export const deleteUser = async (userId: string) => {
     const session = await auth()
-    if (session?.user.role !== "ADMIN") return { error: "Unauthorized" }
+    if (!session?.user || session.user.role !== "ADMIN") return { error: "Unauthorized" }
 
     await prisma.user.delete({
         where: { id: userId }

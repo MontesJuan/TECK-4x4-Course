@@ -1,10 +1,13 @@
 import { prisma } from "@/lib/prisma"
 import { AdminModuleForm } from "@/components/admin/module-form"
 import { MaterialsManager } from "@/components/admin/materials-manager"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
-export default async function EditModulePage({ params }: { params: { moduleId: string } }) {
+export default async function EditModulePage({ params }: { params: Promise<{ moduleId: string }> }) {
+    const { moduleId } = await params;
     const moduleData = await prisma.module.findUnique({
-        where: { id: params.moduleId },
+        where: { id: moduleId },
         include: { materials: true }
     })
 

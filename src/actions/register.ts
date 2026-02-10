@@ -49,7 +49,27 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
             },
         })
 
-        // Add to Google Sheets (TODO: Implement syncing logic here or via webhook/queue)
+        // Add to Google Sheets
+        try {
+            await addToSheet({
+                name,
+                surname,
+                email,
+                cuil,
+                phone,
+                company,
+                position,
+                licenseType,
+                licenseExpiry: new Date(licenseExpiry),
+                country,
+                province,
+                city,
+                status: "PENDING"
+            })
+        } catch (sheetError) {
+            console.error("Error syncing to Google Sheet:", sheetError)
+        }
+
         // Send verification email to admin
         try {
             if (process.env.RESEND_API_KEY) {

@@ -15,7 +15,7 @@ const QuestionSchema = z.object({
 
 export const createQuestion = async (moduleId: string, values: z.infer<typeof QuestionSchema>) => {
     const session = await auth()
-    if (session?.user.role !== "ADMIN") return { error: "Unauthorized" }
+    if (!session?.user || session.user.role !== "ADMIN") return { error: "Unauthorized" }
 
     const validated = QuestionSchema.safeParse(values)
     if (!validated.success) return { error: "Invalid fields" }

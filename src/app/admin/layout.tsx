@@ -16,11 +16,11 @@ export default async function AdminLayout({
     }
 
     return (
-        <div className="flex h-screen bg-slate-100">
-            <aside className="w-64 bg-slate-900 text-slate-100 flex flex-col">
-                <div className="p-6 border-b border-slate-800">
+        <div className="flex h-screen bg-background text-foreground">
+            <aside className="w-64 bg-card border-r border-border flex flex-col">
+                <div className="p-6 border-b border-border">
                     <h1 className="text-xl font-bold">Panel Admin</h1>
-                    <p className="text-xs text-slate-400">TEC 4x4</p>
+                    <p className="text-xs text-muted-foreground">TECK - CURSO 4x4</p>
                 </div>
                 <nav className="flex-1 p-4 space-y-2">
                     <Button variant="ghost" className="w-full justify-start gap-2" asChild>
@@ -34,8 +34,8 @@ export default async function AdminLayout({
                         </Link>
                     </Button>
                 </nav>
-                <div className="p-4 border-t border-slate-800">
-                    <Button variant="ghost" className="w-full justify-start gap-2 text-red-400 hover:text-red-300 hover:bg-red-900/20" asChild>
+                <div className="p-4 border-t border-border">
+                    <Button variant="ghost" className="w-full justify-start gap-2 text-destructive hover:text-destructive hover:bg-destructive/10" asChild>
                         <a href="/api/auth/signout">
                             <LogOut className="h-4 w-4" /> Salir
                         </a>

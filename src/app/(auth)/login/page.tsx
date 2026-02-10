@@ -1,9 +1,12 @@
+import { Suspense } from "react"
 import { LoginForm } from "@/components/auth/login-form"
 
 export default function LoginPage() {
     return (
-        <div className="h-full flex items-center justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-400 to-blue-800">
-            <LoginForm />
+        <div className="h-full flex items-center justify-center">
+            <Suspense>
+                <LoginForm />
+            </Suspense>
         </div>
     )
 }

@@ -61,11 +61,11 @@ export default async function DashboardPage() {
             </div>
 
             {allModulesCompleted && (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-4 text-green-800">
+                <div className="bg-green-900/20 border border-green-900/50 rounded-lg p-6 flex items-center gap-4 text-green-400">
                     <Award className="h-8 w-8" />
                     <div>
-                        <h3 className="font-semibold">¡Felicitaciones! Has completado el curso.</h3>
-                        <p className="text-sm">Tu certificado está listo para descargar.</p>
+                        <h3 className="font-semibold text-lg">¡Felicitaciones! Has completado el curso.</h3>
+                        <p className="text-sm text-green-400/80">Tu certificado está listo para descargar.</p>
                     </div>
                 </div>
             )}

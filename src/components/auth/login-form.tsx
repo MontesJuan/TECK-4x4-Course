@@ -68,9 +68,9 @@ export const LoginForm = () => {
                             name="email"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Email (o Usuario para Admin)</FormLabel>
+                                    <FormLabel className="text-gray-200">Email (o Usuario para Admin)</FormLabel>
                                     <FormControl>
-                                        <Input disabled={isPending} {...field} />
+                                        <Input disabled={isPending} {...field} className="bg-black/20 border-white/20 text-white placeholder:text-gray-500 focus-visible:ring-offset-0 focus-visible:ring-1 focus-visible:ring-white/50" />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -81,9 +81,9 @@ export const LoginForm = () => {
                             name="password"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Contraseña</FormLabel>
+                                    <FormLabel className="text-gray-200">Contraseña</FormLabel>
                                     <FormControl>
-                                        <Input disabled={isPending} type="password" {...field} />
+                                        <Input disabled={isPending} type="password" {...field} className="bg-black/20 border-white/20 text-white placeholder:text-gray-500 focus-visible:ring-offset-0 focus-visible:ring-1 focus-visible:ring-white/50" />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

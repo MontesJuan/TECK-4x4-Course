@@ -23,7 +23,7 @@ export default async function AdminDashboardPage() {
         <div className="space-y-6">
             <h1 className="text-2xl font-bold">Gestión de Alumnos</h1>
 
-            <div className="bg-white rounded-md shadow border">
+            <div className="bg-card rounded-md shadow border">
                 <Table>
                     <TableHeader>
                         <TableRow>

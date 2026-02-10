@@ -4,17 +4,18 @@ import { redirect } from "next/navigation"
 import { ExamForm } from "@/components/exam/exam-form"
 
 interface ExamPageProps {
-    params: {
+    params: Promise<{
         moduleId: string
-    }
+    }>
 }
 
 export default async function ExamPage({ params }: ExamPageProps) {
+    const { moduleId } = await params;
     const session = await auth()
     if (!session?.user) redirect("/login")
 
     const moduleData = await prisma.module.findUnique({
-        where: { id: params.moduleId },
+        where: { id: moduleId },
         include: {
             questions: {
                 include: {

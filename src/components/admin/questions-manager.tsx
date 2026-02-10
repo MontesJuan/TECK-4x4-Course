@@ -93,7 +93,7 @@ export const QuestionsManager = ({ moduleId, questions }: { moduleId: string, qu
         <div className="space-y-8">
             <div className="space-y-4">
                 {questions.map((q, idx) => (
-                    <div key={q.id} className="bg-white p-4 rounded shadow border">
+                    <div key={q.id} className="bg-card p-4 rounded shadow border">
                         <div className="flex justify-between items-start mb-2">
                             <h3 className="font-semibold">Pregunta {idx + 1}: {q.text}</h3>
                             <Button variant="ghost" size="sm" onClick={() => handleDelete(q.id)} disabled={isPending}>
@@ -113,7 +113,7 @@ export const QuestionsManager = ({ moduleId, questions }: { moduleId: string, qu
                 {questions.length === 0 && <p className="text-muted-foreground">No hay preguntas configuradas.</p>}
             </div>
 
-            <div className="bg-white p-6 rounded shadow border space-y-4">
+            <div className="bg-card p-6 rounded shadow border space-y-4">
                 <h3 className="text-lg font-semibold">Agregar Nueva Pregunta</h3>
 
                 <div>

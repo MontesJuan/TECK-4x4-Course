@@ -6,17 +6,18 @@ import Link from "next/link"
 import { AlertTriangle, FileText, CheckCircle, PlayCircle } from "lucide-react"
 
 interface ModulePageProps {
-    params: {
+    params: Promise<{
         moduleId: string
-    }
+    }>
 }
 
 export default async function ModulePage({ params }: ModulePageProps) {
+    const { moduleId } = await params;
     const session = await auth()
     if (!session?.user) redirect("/login")
 
     const moduleData = await prisma.module.findUnique({
-        where: { id: params.moduleId },
+        where: { id: moduleId },
         include: {
             materials: true,
             progress: {

@@ -42,7 +42,7 @@ export const AdminModuleForm = ({ moduleId, initialData }: AdminModuleFormProps)
     const [isPending, startTransition] = useTransition()
 
     const form = useForm<z.infer<typeof ModuleSchema>>({
-        resolver: zodResolver(ModuleSchema),
+        resolver: zodResolver(ModuleSchema) as any,
         defaultValues: {
             title: initialData?.title || "",
             description: initialData?.description || "",
@@ -72,7 +72,7 @@ export const AdminModuleForm = ({ moduleId, initialData }: AdminModuleFormProps)
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 bg-white p-6 rounded shadow max-w-2xl">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 bg-card p-6 rounded shadow max-w-2xl">
                 <FormField
                     control={form.control}
                     name="title"
