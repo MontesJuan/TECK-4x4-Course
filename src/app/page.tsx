@@ -34,7 +34,7 @@ export default async function Home() {
 
           <div className="space-y-4 max-w-lg">
             <h1 className="text-5xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 drop-shadow-sm">
-              TEC 4x4
+              TECK - CURSO 4x4
             </h1>
             <p className="text-xl text-gray-200 font-light tracking-wide">
               Aula Virtual de Capacitación Profesional
