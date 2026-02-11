@@ -46,3 +46,46 @@ export const deleteUser = async (userId: string) => {
     revalidatePath("/admin/dashboard")
     return { success: "Usuario eliminado" }
 }
+
+export const syncUserToSheet = async (userId: string) => {
+    const session = await auth()
+    if (!session?.user || session.user.role !== "ADMIN") {
+        return { error: "No autorizado" }
+    }
+
+    try {
+        const { syncFullUserData } = await import("@/lib/google-sheets")
+
+        // Fetch User and Progress
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            include: {
+                progress: {
+                    include: { module: true }
+                }
+            }
+        })
+
+        if (!user) {
+            return { error: "Usuario no encontrado" }
+        }
+
+        const totalModulesCount = await prisma.module.count()
+        const progressForSheet = user.progress.map(p => ({
+            title: p.module.title,
+            score: p.score || 0
+        }))
+
+        const sumScores = user.progress.reduce((acc, curr) => acc + (curr.score || 0), 0)
+        const totalAverage = totalModulesCount > 0 ? sumScores / totalModulesCount : 0
+
+        await syncFullUserData(user, progressForSheet, totalAverage)
+
+        revalidatePath("/admin/dashboard")
+        return { success: "Datos sincronizados con Google Sheets" }
+
+    } catch (error) {
+        console.error("Manual sync error:", error)
+        return { error: "Error al sincronizar" }
+    }
+}
