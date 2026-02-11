@@ -79,7 +79,8 @@ export const addToSheet = async (userData: any) => {
     }
 }
 
-export const updateUserProgress = async (email: string, progress: { title: string, score: number }[], totalAverage: number) => {
+
+export const updateUserProgress = async (email: string, progress: Record<string, string | number>, totalAverage: number) => {
     if (!SPREADSHEET_ID || !GOOGLE_CLIENT_EMAIL || !GOOGLE_PRIVATE_KEY) {
         console.warn("Google Sheets credentials missing. Skipping sync.");
         return;
@@ -105,16 +106,10 @@ export const updateUserProgress = async (email: string, progress: { title: strin
 
         if (userRow) {
             // Update individual module columns
-            const updates: Record<string, string | number> = {};
-
-            progress.forEach(p => {
-                // Assuming column name matches module title exactly
-                // We truncate to 2 decimal places for cleanliness
-                updates[p.title] = p.score.toFixed(2) + '%';
-            });
+            const updates: Record<string, string | number> = { ...progress };
 
             // Update total average
-            updates['Promedio Global'] = totalAverage.toFixed(2) + '%';
+            updates['PROMEDIO TOTAL'] = totalAverage.toFixed(2) + '%';
 
             userRow.assign(updates);
             await userRow.save();
@@ -127,7 +122,7 @@ export const updateUserProgress = async (email: string, progress: { title: strin
     }
 }
 
-export const syncFullUserData = async (userData: any, progress: { title: string, score: number }[], totalAverage: number) => {
+export const syncFullUserData = async (userData: any, progress: Record<string, string | number>, totalAverage: number) => {
     if (!SPREADSHEET_ID || !GOOGLE_CLIENT_EMAIL || !GOOGLE_PRIVATE_KEY) {
         console.warn("Google Sheets credentials missing. Skipping sync.");
         return;
@@ -165,21 +160,16 @@ export const syncFullUserData = async (userData: any, progress: { title: string,
             "Provincia": userData.province,
             "Localidad": userData.city,
             "Estado": userData.status === "ACTIVE" ? "ACTIVO" : "PENDIENTE",
-            "Promedio Global": totalAverage.toFixed(2) + '%'
+            "PROMEDIO TOTAL": totalAverage.toFixed(2) + '%'
         };
 
         // Add module scores
-        progress.forEach(p => {
-            rowData[p.title] = p.score.toFixed(2) + '%';
-        });
+        Object.assign(rowData, progress);
 
         if (userRow) {
             userRow.assign(rowData);
             await userRow.save();
         } else {
-            // Find first empty row (where Apellido is missing)
-            // Reuse logic from addToSheet or just use fallback addRow? 
-            // Better to re-find empty row logic to suppress "gaps" if previously deleted.
             let targetRow;
             for (const row of rows) {
                 if (!row.get('Apellido')) {

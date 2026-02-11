@@ -70,16 +70,30 @@ export const syncUserToSheet = async (userId: string) => {
             return { error: "Usuario no encontrado" }
         }
 
-        const totalModulesCount = await prisma.module.count()
-        const progressForSheet = user.progress.map(p => ({
-            title: p.module.title,
-            score: p.score || 0
-        }))
+
+        const allModules = await prisma.module.findMany({
+            orderBy: { order: 'asc' }
+        })
+
+        const totalModulesCount = allModules.length
+
+        const progressMap: Record<string, string | number> = {}
+
+        // Map progress to MODULO1, MODULO2, etc. based on Module order
+        allModules.forEach((mod, index) => {
+            const userModProgress = user.progress.find(p => p.moduleId === mod.id)
+            if (userModProgress && userModProgress.score !== null) {
+                progressMap[`MODULO${index + 1}`] = userModProgress.score.toFixed(2) + '%'
+            }
+        })
 
         const sumScores = user.progress.reduce((acc, curr) => acc + (curr.score || 0), 0)
+        // Calculating average based on modules TAKEN or ALL modules? 
+        // Previous logic was ALL modules. Let's stick to that for "Global".
+        // But usually average is sum / count. If count is 0, 0.
         const totalAverage = totalModulesCount > 0 ? sumScores / totalModulesCount : 0
 
-        await syncFullUserData(user, progressForSheet, totalAverage)
+        await syncFullUserData(user, progressMap, totalAverage)
 
         revalidatePath("/admin/dashboard")
         return { success: "Datos sincronizados con Google Sheets" }
