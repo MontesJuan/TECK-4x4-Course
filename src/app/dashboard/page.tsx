@@ -4,7 +4,7 @@ import { redirect } from "next/navigation"
 import { ModuleCard } from "@/components/dashboard/module-card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { Download, Award } from "lucide-react"
+import { Download, Award, AlertTriangle } from "lucide-react"
 
 export default async function DashboardPage() {
     const session = await auth()
@@ -12,6 +12,13 @@ export default async function DashboardPage() {
     if (!session?.user) {
         redirect("/login")
     }
+
+    const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { evaluationValidUntil: true }
+    })
+
+    const isPaused = user?.evaluationValidUntil && new Date() > user.evaluationValidUntil
 
     const modules = await prisma.module.findMany({
         orderBy: { order: "asc" },
@@ -36,8 +43,9 @@ export default async function DashboardPage() {
             allModulesCompleted = false
         }
 
-        let type: "LOCKED" | "UNLOCKED" | "COMPLETED" = "LOCKED"
+        let type: "LOCKED" | "UNLOCKED" | "COMPLETED" | "LOCKED_TIME" = "LOCKED"
         if (isCompleted) type = "COMPLETED"
+        else if (isPaused) type = "LOCKED_TIME"
         else if (isUnlocked) type = "UNLOCKED"
 
         return { ...module, type }
@@ -45,6 +53,16 @@ export default async function DashboardPage() {
 
     return (
         <div className="space-y-8">
+            {isPaused && (
+                <div className="bg-red-900/20 border border-red-900/50 rounded-lg p-6 flex items-center gap-4 text-red-400">
+                    <AlertTriangle className="h-8 w-8 flex-shrink-0" />
+                    <div>
+                        <h3 className="font-semibold text-lg">Tu tiempo de evaluación ha expirado</h3>
+                        <p className="text-sm text-red-400/80">Han pasado más de 48 horas desde tu habilitación. Por favor, comunícate con la administración para que vuelvan a habilitar tu acceso.</p>
+                    </div>
+                </div>
+            )}
+
             <div className="flex flex-col gap-2 relative">
                 <h1 className="text-3xl font-bold tracking-tight">Mis Cursos</h1>
                 <p className="text-muted-foreground">Completa los módulos y aprueba los exámenes para obtener tu certificación.</p>

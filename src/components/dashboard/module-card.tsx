@@ -9,19 +9,20 @@ interface ModuleCardProps {
     title: string
     description: string
     order: number
-    type: "LOCKED" | "UNLOCKED" | "COMPLETED"
+    type: "LOCKED" | "UNLOCKED" | "COMPLETED" | "LOCKED_TIME"
 }
 
 export const ModuleCard = ({ id, title, description, order, type }: ModuleCardProps) => {
-    const isLocked = type === "LOCKED"
+    const isLockedTime = type === "LOCKED_TIME"
+    const isLocked = type === "LOCKED" || isLockedTime
     const isCompleted = type === "COMPLETED"
 
     return (
         <Card className={`w-full ${isLocked ? "opacity-50 grayscale bg-muted/20 border-white/5" : "hover:border-primary/50 hover:shadow-lg transition-all duration-300 bg-card"}`}>
             <CardHeader>
                 <div className="flex justify-between items-start">
-                    <Badge variant={isCompleted ? "default" : (isLocked ? "secondary" : "outline")}>
-                        {isCompleted ? "Completado" : (isLocked ? "Bloqueado" : "Disponible")}
+                    <Badge variant={isCompleted ? "default" : (isLockedTime ? "destructive" : (isLocked ? "secondary" : "outline"))}>
+                        {isCompleted ? "Completado" : (isLockedTime ? "Pausado por Tiempo" : (isLocked ? "Bloqueado" : "Disponible"))}
                     </Badge>
                     <span className="text-sm text-muted-foreground font-mono">Módulo {order}</span>
                 </div>
@@ -30,8 +31,8 @@ export const ModuleCard = ({ id, title, description, order, type }: ModuleCardPr
             </CardHeader>
             <CardFooter>
                 {isLocked ? (
-                    <Button disabled className="w-full">
-                        <Lock className="mr-2 h-4 w-4" /> Bloqueado
+                    <Button disabled className="w-full" variant={isLockedTime ? "destructive" : "default"}>
+                        <Lock className="mr-2 h-4 w-4" /> {isLockedTime ? "Tiempo Expirado" : "Bloqueado"}
                     </Button>
                 ) : (
                     <Button asChild className="w-full" variant={isCompleted ? "outline" : "default"}>

@@ -13,6 +13,13 @@ export const submitExam = async ({ moduleId, answers }: SubmitExamPayload) => {
     const session = await auth()
     if (!session?.user) return { error: "No autorizado" }
 
+    const user = await prisma.user.findUnique({ where: { id: session.user.id } })
+    if (!user) return { error: "Usuario no encontrado" }
+
+    if (user.evaluationValidUntil && new Date() > user.evaluationValidUntil) {
+        return { error: "Tiempo de evaluación expirado. Por favor, contacta a la administración." }
+    }
+
     // Fetch module questions and correct options
     const moduleData = await prisma.module.findUnique({
         where: { id: moduleId },

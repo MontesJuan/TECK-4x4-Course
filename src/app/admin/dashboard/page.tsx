@@ -8,7 +8,7 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { ApproveUserButton, DeleteUserButton } from "@/components/admin/action-buttons"
+import { ApproveUserButton, DeleteUserButton, UnblockUserButton } from "@/components/admin/action-buttons"
 import { SyncUserButton } from "@/components/admin/sync-user-button"
 
 export default async function AdminDashboardPage() {
@@ -66,8 +66,8 @@ export default async function AdminDashboardPage() {
                                     <TableCell>{user.email}</TableCell>
                                     <TableCell>{user.company}</TableCell>
                                     <TableCell>
-                                        <Badge variant={user.status === "ACTIVE" ? "default" : "secondary"}>
-                                            {user.status === "ACTIVE" ? "Activo" : "Pendiente"}
+                                        <Badge variant={user.status === "ACTIVE" ? (user.evaluationValidUntil && new Date() > user.evaluationValidUntil ? "destructive" : "default") : "secondary"}>
+                                            {user.status === "ACTIVE" ? (user.evaluationValidUntil && new Date() > user.evaluationValidUntil ? "Pausado (Tiempo)" : "Activo") : "Pendiente"}
                                         </Badge>
                                     </TableCell>
 
@@ -97,6 +97,9 @@ export default async function AdminDashboardPage() {
                                         <SyncUserButton userId={user.id} />
                                         {user.status === "PENDING" && (
                                             <ApproveUserButton userId={user.id} />
+                                        )}
+                                        {user.status === "ACTIVE" && user.evaluationValidUntil && new Date() > user.evaluationValidUntil && (
+                                            <UnblockUserButton userId={user.id} />
                                         )}
                                         <DeleteUserButton userId={user.id} />
                                     </TableCell>

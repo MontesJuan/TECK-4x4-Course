@@ -13,7 +13,10 @@ export const approveUser = async (userId: string) => {
 
     await prisma.user.update({
         where: { id: userId },
-        data: { status: "ACTIVE" }
+        data: {
+            status: "ACTIVE",
+            evaluationValidUntil: new Date(Date.now() + 48 * 60 * 60 * 1000)
+        }
     })
 
     // Send confirmation email
@@ -33,6 +36,19 @@ export const approveUser = async (userId: string) => {
 
     revalidatePath("/admin/dashboard")
     return { success: "Usuario aprobado" }
+}
+
+export const unblockUser = async (userId: string) => {
+    const session = await auth()
+    if (!session?.user || session.user.role !== "ADMIN") return { error: "Unauthorized" }
+
+    await prisma.user.update({
+        where: { id: userId },
+        data: { evaluationValidUntil: new Date(Date.now() + 48 * 60 * 60 * 1000) }
+    })
+
+    revalidatePath("/admin/dashboard")
+    return { success: "Usuario desbloqueado por 48hs" }
 }
 
 export const deleteUser = async (userId: string) => {

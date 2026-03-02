@@ -16,6 +16,15 @@ export default async function ModulePage({ params }: ModulePageProps) {
     const session = await auth()
     if (!session?.user) redirect("/login")
 
+    const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { evaluationValidUntil: true }
+    })
+
+    if (user?.evaluationValidUntil && new Date() > user.evaluationValidUntil) {
+        redirect("/dashboard")
+    }
+
     const moduleData = await prisma.module.findUnique({
         where: { id: moduleId },
         include: {
