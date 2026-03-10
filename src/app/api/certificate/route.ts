@@ -68,6 +68,20 @@ export async function GET(req: Request) {
         color: rgb(0.2, 0.2, 0.2), // Dark grey for a more elegant look
     })
 
+    // Add DNI / CUIL
+    const dniText = `DNI / CUIL: ${user.cuil || 'No informado'}`
+    const helveticaRegular = await pdfDoc.embedFont(StandardFonts.Helvetica)
+    const dniFontSize = 16
+    const dniTextWidth = helveticaRegular.widthOfTextAtSize(dniText, dniFontSize)
+
+    firstPage.drawText(dniText, {
+        x: (width / 2) - (dniTextWidth / 2), // Perfect horizontal centering
+        y: (height / 2) - 25, // Lowered beneath the name
+        size: dniFontSize,
+        font: helveticaRegular,
+        color: rgb(0.4, 0.4, 0.4), // Lighter grey for subtitle
+    })
+
     // Generate QR
     // "QR personal con un link a una planilla de google sheets con sus calificaciones personales"
     // I don't have the sheet link per user logic yet.

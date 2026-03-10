@@ -13,6 +13,19 @@ export const submitExam = async ({ moduleId, answers }: SubmitExamPayload) => {
     const session = await auth()
     if (!session?.user) return { error: "No autorizado" }
 
+    const existingProgressCheck = await prisma.userProgress.findUnique({
+        where: {
+            userId_moduleId: {
+                userId: session.user.id,
+                moduleId: moduleId
+            }
+        }
+    })
+
+    if (existingProgressCheck && existingProgressCheck.attempts >= 1) {
+        return { error: "Ya has agotado tu único intento para este módulo." }
+    }
+
     // Fetch module questions and correct options
     const moduleData = await prisma.module.findUnique({
         where: { id: moduleId },
@@ -60,18 +73,6 @@ export const submitExam = async ({ moduleId, answers }: SubmitExamPayload) => {
     // If passed, we set completed = true.
     // We update score (keep highest? or latest? usually highest or latest. Let's keep latest for now, or ensure we don't regress complete status)
 
-    const existingProgress = await prisma.userProgress.findUnique({
-        where: {
-            userId_moduleId: {
-                userId: session.user.id,
-                moduleId: moduleId
-            }
-        }
-    })
-
-    // To prevent regressing a higher score, we take Math.max
-    const finalScore = existingProgress?.score ? Math.max(existingProgress.score, scorePercentage) : scorePercentage;
-
     await prisma.userProgress.upsert({
         where: {
             userId_moduleId: {
@@ -81,7 +82,7 @@ export const submitExam = async ({ moduleId, answers }: SubmitExamPayload) => {
         },
         update: {
             completed: true, // Always completed just by attempting it
-            score: finalScore, // Keep highest score
+            score: scorePercentage, // only one attempt so this is the final score
             attempts: { increment: 1 }
         },
         create: {

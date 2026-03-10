@@ -2,6 +2,9 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { ExamForm } from "@/components/exam/exam-form"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { AlertTriangle } from "lucide-react"
 
 interface ExamPageProps {
     params: Promise<{
@@ -14,10 +17,33 @@ export default async function ExamPage({ params }: ExamPageProps) {
     const session = await auth()
     if (!session?.user) redirect("/login")
 
-    // We do NOT redirect here anymore.
-    // If we redirect immediately because attempts >= 1, the client-side ExamForm 
-    // will be unmounted by Next.js Server Action revalidation before it can show the result card!
-    // The user can now retake exams and the backend math.max score handles it safely.
+    const progress = await prisma.userProgress.findUnique({
+        where: {
+            userId_moduleId: {
+                userId: session.user.id,
+                moduleId: moduleId
+            }
+        }
+    })
+
+    if (progress && progress.attempts >= 1) {
+        return (
+            <div className="container py-8 max-w-2xl mx-auto mt-8 flex flex-col items-center justify-center gap-6 bg-zinc-900 border border-zinc-800 rounded-2xl p-10 shadow-2xl text-center">
+                <AlertTriangle className="h-20 w-20 text-yellow-500" />
+                <h1 className="text-3xl font-extrabold text-white">Examen ya rendido</h1>
+                <p className="text-zinc-400 text-lg">
+                    Ya has utilizado tu único intento para este módulo. Obtuviste una calificación de <span className="font-bold text-white text-xl">{progress.score?.toFixed(0) ?? 0}%</span>.
+                </p>
+                <div className="mt-4">
+                    <Button asChild size="lg" className="bg-white text-black hover:bg-zinc-200 font-bold px-10 rounded-full transition-transform hover:scale-105 shadow-xl">
+                        <Link href={`/dashboard/module/${moduleId}`}>
+                            Volver al módulo
+                        </Link>
+                    </Button>
+                </div>
+            </div>
+        )
+    }
 
     const moduleData = await prisma.module.findUnique({
         where: { id: moduleId },

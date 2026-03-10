@@ -66,6 +66,7 @@ export default async function ModulePage({ params }: ModulePageProps) {
 
     const usageProgress = moduleData.progress[0]
     const isCompleted = usageProgress?.completed || false
+    const attempts = usageProgress?.attempts || 0
 
     // Transform drive link to preview/embed if needed.
     // The prompt provides links like https://drive.google.com/file/d/1Pj.../view?usp=drive_link
@@ -78,15 +79,25 @@ export default async function ModulePage({ params }: ModulePageProps) {
         <div className="space-y-8 max-w-4xl mx-auto px-4 py-8">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <h1 className="text-4xl font-extrabold tracking-tight text-white drop-shadow-sm">{moduleData.title}</h1>
-                <Button
-                    asChild
-                    size="lg"
-                    className={isCompleted ? "bg-zinc-800 text-zinc-100 hover:bg-zinc-700 hover:text-white" : "bg-white text-black hover:bg-zinc-200 font-semibold shadow-lg hover:shadow-white/20"}
-                >
-                    <Link href={`/dashboard/module/${moduleData.id}/exam`}>
-                        {isCompleted ? "Ver examen" : "Rendir Examen"}
-                    </Link>
-                </Button>
+                {attempts >= 1 ? (
+                    <Button
+                        disabled
+                        size="lg"
+                        className="bg-zinc-800 text-zinc-400 font-bold cursor-not-allowed shadow-none"
+                    >
+                        Examen Rendido ({usageProgress?.score?.toFixed(0) ?? 0}%)
+                    </Button>
+                ) : (
+                    <Button
+                        asChild
+                        size="lg"
+                        className="bg-white text-black hover:bg-zinc-200 font-bold shadow-lg hover:shadow-white/20"
+                    >
+                        <Link href={`/dashboard/module/${moduleData.id}/exam`}>
+                            Rendir Examen
+                        </Link>
+                    </Button>
+                )}
             </div>
 
             <div className="aspect-video w-full bg-black rounded-2xl overflow-hidden shadow-2xl border border-zinc-800">
