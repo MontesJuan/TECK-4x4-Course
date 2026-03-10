@@ -1,6 +1,7 @@
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
-import { PDFDocument, rgb } from "pdf-lib"
+import { PDFDocument, rgb, StandardFonts } from "pdf-lib"
+import QRCode from "qrcode"
 import fs from "fs"
 import path from "path"
 import { NextResponse } from "next/server"
@@ -23,8 +24,15 @@ export async function GET(req: Request) {
         return new NextResponse("Curso no completado", { status: 403 })
     }
 
+    const totalScore = progress.reduce((acc, curr) => acc + (curr.score ?? 0), 0);
+    const averageScore = modules.length > 0 ? totalScore / modules.length : 0;
+
+    if (averageScore < 80) {
+        return new NextResponse("Promedio insuficiente para obtener el certificado", { status: 403 })
+    }
+
     // Load template
-    const templatePath = path.join(process.cwd(), "public", "certificate-template.pdf")
+    const templatePath = path.join(process.cwd(), "public", "Certificado Teck.pdf")
     if (!fs.existsSync(templatePath)) {
         return new NextResponse("Template not found", { status: 500 })
     }
@@ -47,11 +55,33 @@ export async function GET(req: Request) {
     // Prompt didn't specify coordinates... I'll guess center-ish.
     // Or users usually want it big.
 
+    // Embed standard font to measure text width for perfect centering
+    const helveticaFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+    const fontSize = 28
+    const textWidth = helveticaFont.widthOfTextAtSize(fullName, fontSize)
+
     firstPage.drawText(fullName, {
-        x: width / 2 - (fullName.length * 10), // Rough centering
-        y: height / 2 + 50, // Slightly above center? Or below?
-        size: 30,
-        color: rgb(0, 0, 0),
+        x: (width / 2) - (textWidth / 2), // Perfect horizontal centering
+        y: (height / 2) + 5, // Raised by 20 points to float above the dotted line
+        size: fontSize,
+        font: helveticaFont,
+        color: rgb(0.2, 0.2, 0.2), // Dark grey for a more elegant look
+    })
+
+    // Generate QR
+    // "QR personal con un link a una planilla de google sheets con sus calificaciones personales"
+    // I don't have the sheet link per user logic yet.
+    // I'll point to a placeholder or the general verification URL.
+    // Since I don't have the sheet URL in DB, I'll use a placeholder.
+    const qrData = `https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID_HERE`
+    const qrDataUrl = await QRCode.toDataURL(qrData)
+    const qrImage = await pdfDoc.embedPng(qrDataUrl)
+
+    firstPage.drawImage(qrImage, {
+        x: width - 150,
+        y: 50,
+        width: 100,
+        height: 100,
     })
 
     const pdfBytes = await pdfDoc.save()

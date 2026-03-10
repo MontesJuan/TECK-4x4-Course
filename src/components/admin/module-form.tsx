@@ -72,7 +72,7 @@ export const AdminModuleForm = ({ moduleId, initialData }: AdminModuleFormProps)
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 bg-card p-6 rounded shadow max-w-2xl">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 bg-white text-black p-6 rounded shadow max-w-2xl">
                 <FormField
                     control={form.control}
                     name="title"

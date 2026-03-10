@@ -16,34 +16,53 @@ export default async function AdminLayout({
     }
 
     return (
-        <div className="flex h-screen bg-background text-foreground">
-            <aside className="w-64 bg-card border-r border-border flex flex-col">
-                <div className="p-6 border-b border-border">
-                    <h1 className="text-xl font-bold">Panel Admin</h1>
-                    <p className="text-xs text-muted-foreground">TECK - CURSO 4x4</p>
+        <div className="flex flex-col md:flex-row min-h-screen bg-black text-zinc-50 overflow-hidden">
+            <aside className="w-full md:w-64 bg-zinc-950/80 backdrop-blur-xl border-b md:border-b-0 md:border-r border-zinc-800 flex flex-col z-20">
+                <div className="p-6 border-b border-zinc-800 flex flex-col gap-2">
+                    <div className="flex flex-col gap-4">
+                        <img
+                            src="/assets/logo-nielsen.png"
+                            alt="Nielsen Logo"
+                            className="w-32 object-contain filter brightness-0 invert"
+                        />
+                        <img
+                            src="/assets/logo-teck.png"
+                            alt="Teck Logo"
+                            className="w-24 object-contain filter brightness-0 invert"
+                        />
+                    </div>
+                    <div className="flex items-center gap-2 mt-2">
+                        <h1 className="text-xl font-bold tracking-tight text-white">Panel Admin</h1>
+                    </div>
                 </div>
                 <nav className="flex-1 p-4 space-y-2">
-                    <Button variant="ghost" className="w-full justify-start gap-2" asChild>
+                    <Button variant="ghost" className="w-full justify-start gap-3 hover:bg-zinc-800/50 hover:text-white text-zinc-300" asChild>
                         <Link href="/admin/dashboard">
-                            <Users className="h-4 w-4" /> Usuarios
+                            <Users className="h-5 w-5" /> Usuarios
                         </Link>
                     </Button>
-                    <Button variant="ghost" className="w-full justify-start gap-2" asChild>
+                    <Button variant="ghost" className="w-full justify-start gap-3 hover:bg-zinc-800/50 hover:text-white text-zinc-300" asChild>
                         <Link href="/admin/modules">
-                            <BookOpen className="h-4 w-4" /> Módulos
+                            <BookOpen className="h-5 w-5" /> Módulos
                         </Link>
                     </Button>
                 </nav>
-                <div className="p-4 border-t border-border">
-                    <Button variant="ghost" className="w-full justify-start gap-2 text-destructive hover:text-destructive hover:bg-destructive/10" asChild>
+                <div className="p-4 border-t border-zinc-800">
+                    <Button variant="ghost" className="w-full justify-start gap-3 text-red-400 hover:text-red-300 hover:bg-red-950/50" asChild>
                         <a href="/api/auth/signout">
-                            <LogOut className="h-4 w-4" /> Salir
+                            <LogOut className="h-5 w-5" /> Salir
                         </a>
                     </Button>
                 </div>
             </aside>
-            <main className="flex-1 overflow-y-auto p-8">
-                {children}
+            <main className="flex-1 overflow-y-auto p-4 md:p-8 relative">
+                {/* Internal Subtle Background Overlay */}
+                <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
+                    <div className="absolute inset-0 bg-gradient-to-tr from-zinc-900 to-black" />
+                </div>
+                <div className="relative z-10 w-full">
+                    {children}
+                </div>
             </main>
         </div>
     )

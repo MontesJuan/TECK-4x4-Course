@@ -64,7 +64,8 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
                 country,
                 province,
                 city,
-                status: "PENDING"
+                status: "PENDING",
+                createdAt: user.createdAt
             })
         } catch (sheetError) {
             console.error("Error syncing to Google Sheet:", sheetError)
@@ -76,7 +77,7 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
                 await resend.emails.send({
                     from: "onboarding@resend.dev", // Update with verified domain
                     to: "capacitacion4x4@nielsenexpediciones.com.ar",
-                    subject: "Nuevo Registro de Usuario - TEC 4x4",
+                    subject: "Nuevo Registro de Usuario - Teck 4x4",
                     html: `<p>Nuevo usuario registrado: ${name} ${surname} (${email})</p><p>Empresa: ${company}</p><p>Estado: PENDIENTE APROBACIÓN</p>`,
                 })
             }

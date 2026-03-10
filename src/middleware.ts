@@ -9,8 +9,29 @@ export default auth((req) => {
     const isApiAuthRoute = req.nextUrl.pathname.startsWith("/api/auth")
     const isPublicRoute = req.nextUrl.pathname === "/" || req.nextUrl.pathname.startsWith("/public")
     const isCertificateRoute = req.nextUrl.pathname.startsWith("/api/certificate")
+    const isBlockedRoute = req.nextUrl.pathname.startsWith("/blocked")
 
     if (isApiAuthRoute || isCertificateRoute) return
+
+    if (isLoggedIn) {
+        const user = req.auth?.user as any;
+        if (user && user.role !== "ADMIN" && user.createdAt) {
+            const createdAt = new Date(user.createdAt);
+            const now = new Date();
+            const diffHours = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
+
+            if (diffHours >= 48) {
+                if (!isBlockedRoute) {
+                    return Response.redirect(new URL("/blocked", req.nextUrl))
+                }
+                return
+            }
+        }
+    }
+
+    if (isBlockedRoute && (!isLoggedIn || (req.auth?.user as any)?.role === "ADMIN")) {
+        return Response.redirect(new URL("/dashboard", req.nextUrl))
+    }
 
     if (isAuthRoute) {
         if (isLoggedIn) {
@@ -19,7 +40,7 @@ export default auth((req) => {
         return
     }
 
-    if (!isLoggedIn && !isPublicRoute) {
+    if (!isLoggedIn && !isPublicRoute && !isBlockedRoute) {
         return Response.redirect(new URL("/login", req.nextUrl))
     }
 
@@ -27,5 +48,5 @@ export default auth((req) => {
 })
 
 export const config = {
-    matcher: ["/((?!api|_next/static|_next/image|favicon.ico|assets).*)"],
+    matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 }

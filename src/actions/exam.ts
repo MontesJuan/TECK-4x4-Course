@@ -13,13 +13,6 @@ export const submitExam = async ({ moduleId, answers }: SubmitExamPayload) => {
     const session = await auth()
     if (!session?.user) return { error: "No autorizado" }
 
-    const user = await prisma.user.findUnique({ where: { id: session.user.id } })
-    if (!user) return { error: "Usuario no encontrado" }
-
-    if (user.evaluationValidUntil && new Date() > user.evaluationValidUntil) {
-        return { error: "Tiempo de evaluación expirado. Por favor, contacta a la administración." }
-    }
-
     // Fetch module questions and correct options
     const moduleData = await prisma.module.findUnique({
         where: { id: moduleId },
@@ -37,15 +30,27 @@ export const submitExam = async ({ moduleId, answers }: SubmitExamPayload) => {
 
     if (totalQuestions === 0) return { error: "Este módulo no tiene preguntas configuradas." }
 
-    // Calculate Score
-    moduleData.questions.forEach(q => {
-        const selectedOptionId = answers[q.id]
-        const correctOption = q.options.find(o => o.isCorrect)
+    const userAnswersToSave = []
 
-        if (selectedOptionId && correctOption && selectedOptionId === correctOption.id) {
+    // Calculate Score and Prepare UserAnswers
+    for (const q of moduleData.questions) {
+        const selectedOptionId = answers[q.id]
+        if (!selectedOptionId) continue
+
+        const correctOption = q.options.find(o => o.isCorrect)
+        const isCorrect = selectedOptionId === correctOption?.id
+
+        if (isCorrect) {
             correctCount++
         }
-    })
+
+        userAnswersToSave.push({
+            userId: session.user.id,
+            questionId: q.id,
+            optionId: selectedOptionId,
+            isCorrect: isCorrect
+        })
+    }
 
     const scorePercentage = (correctCount / totalQuestions) * 100
     const passed = scorePercentage >= 80
@@ -55,7 +60,6 @@ export const submitExam = async ({ moduleId, answers }: SubmitExamPayload) => {
     // If passed, we set completed = true.
     // We update score (keep highest? or latest? usually highest or latest. Let's keep latest for now, or ensure we don't regress complete status)
 
-    // First fetch existing progress to check if already completed
     const existingProgress = await prisma.userProgress.findUnique({
         where: {
             userId_moduleId: {
@@ -65,8 +69,8 @@ export const submitExam = async ({ moduleId, answers }: SubmitExamPayload) => {
         }
     })
 
-    const isAlreadyCompleted = existingProgress?.completed || false
-    const newCompleted = isAlreadyCompleted || passed
+    // To prevent regressing a higher score, we take Math.max
+    const finalScore = existingProgress?.score ? Math.max(existingProgress.score, scorePercentage) : scorePercentage;
 
     await prisma.userProgress.upsert({
         where: {
@@ -76,60 +80,38 @@ export const submitExam = async ({ moduleId, answers }: SubmitExamPayload) => {
             }
         },
         update: {
-            completed: newCompleted,
-            score: scorePercentage, // Update with latest score
+            completed: true, // Always completed just by attempting it
+            score: finalScore, // Keep highest score
             attempts: { increment: 1 }
         },
         create: {
             userId: session.user.id,
             moduleId: moduleId,
-            completed: passed,
+            completed: true,
             score: scorePercentage,
             attempts: 1
         }
     })
 
-    // Verify total progress for Google Sheets sync
-    // Sync to Google Sheets
-    // We need user email.
-    if (session.user.email) {
-        try {
-            const { updateUserProgress } = await import("@/lib/google-sheets")
-
-            // Fetch ALL modules to ensure correct order
-            const allModules = await prisma.module.findMany({
-                orderBy: { order: 'asc' }
-            })
-
-            // Fetch fresh progress for ALL modules
-            const allProgress = await prisma.userProgress.findMany({
-                where: { userId: session.user.id }
-            })
-
-            const progressMap: Record<string, string | number> = {}
-            let sumScores = 0
-
-            allModules.forEach((mod, index) => {
-                const prog = allProgress.find(p => p.moduleId === mod.id)
-                if (prog && prog.score !== null) {
-                    progressMap[`MODULO${index + 1}`] = prog.score.toFixed(2) + '%'
-                    sumScores += prog.score
+    // Save detailed answers sequentially to avoid connection pool exhaustion
+    for (const ua of userAnswersToSave) {
+        await prisma.userAnswer.upsert({
+            where: {
+                userId_questionId: {
+                    userId: ua.userId,
+                    questionId: ua.questionId
                 }
-            })
-
-            const totalModulesCount = allModules.length
-            const totalAverage = totalModulesCount > 0 ? sumScores / totalModulesCount : 0
-
-            await updateUserProgress(session.user.email, progressMap, totalAverage)
-
-        } catch (e) {
-            console.error("Failed to sync exam result to sheet:", e)
-        }
+            },
+            update: {
+                optionId: ua.optionId,
+                isCorrect: ua.isCorrect
+            },
+            create: ua
+        })
     }
 
     revalidatePath("/dashboard")
     revalidatePath(`/dashboard/module/${moduleId}`)
-    revalidatePath("/admin/dashboard") // Ensure admin panel is updated
 
     return {
         success: true,
@@ -137,5 +119,49 @@ export const submitExam = async ({ moduleId, answers }: SubmitExamPayload) => {
         score: scorePercentage,
         correctCount,
         totalQuestions
+    }
+}
+
+export const syncExamToSheets = async () => {
+    const session = await auth()
+    if (!session?.user) return { error: "No autorizado" }
+
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            include: { progress: { include: { module: true } } }
+        });
+
+        if (user) {
+            const moduleScores: Record<string, number> = {};
+            user.progress.forEach(p => {
+                if (p.score !== null) {
+                    moduleScores[p.module.title] = p.score;
+                }
+            });
+
+            const { addToSheet } = await import("@/lib/google-sheets");
+            await addToSheet({
+                name: user.name,
+                surname: user.surname,
+                email: user.email,
+                cuil: user.cuil,
+                phone: user.phone,
+                company: user.company,
+                position: user.position,
+                licenseType: user.licenseType,
+                licenseExpiry: user.licenseExpiry,
+                country: user.country,
+                province: user.province,
+                city: user.city,
+                createdAt: user.createdAt,
+                status: user.status,
+                moduleScores
+            })
+        }
+        return { success: true }
+    } catch (sheetError) {
+        console.error("Error syncing to Google Sheet after exam:", sheetError);
+        return { error: "Sync error" }
     }
 }

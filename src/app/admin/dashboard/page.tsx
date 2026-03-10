@@ -8,22 +8,24 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { ApproveUserButton, DeleteUserButton, UnblockUserButton } from "@/components/admin/action-buttons"
-import { SyncUserButton } from "@/components/admin/sync-user-button"
+import { ApproveUserButton, DeleteUserButton } from "@/components/admin/action-buttons"
+import { UserDetailDialog } from "@/components/admin/UserDetailDialog"
 
 export default async function AdminDashboardPage() {
-    // Check auth in layout, but double check usually good or layout handles it.
-
-    const modules = await prisma.module.findMany({
-        orderBy: { order: "asc" }
-    })
-
     const users = await prisma.user.findMany({
         where: { role: "USER" },
         orderBy: { createdAt: "desc" },
         include: {
             progress: {
-                include: { module: true }
+                include: {
+                    module: true
+                }
+            },
+            answers: {
+                include: {
+                    question: true,
+                    option: true
+                }
             }
         }
     })
@@ -32,7 +34,7 @@ export default async function AdminDashboardPage() {
         <div className="space-y-6">
             <h1 className="text-2xl font-bold">Gestión de Alumnos</h1>
 
-            <div className="bg-card rounded-md shadow border overflow-x-auto">
+            <div className="bg-white text-black rounded-md shadow border">
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -40,71 +42,49 @@ export default async function AdminDashboardPage() {
                             <TableHead>Email</TableHead>
                             <TableHead>Empresa</TableHead>
                             <TableHead>Estado</TableHead>
-                            {modules.map(module => (
-                                <TableHead key={module.id} className="text-center text-xs w-24">
-                                    {module.title}
-                                </TableHead>
-                            ))}
-                            <TableHead className="text-center text-xs font-bold">Total</TableHead>
+                            <TableHead>Inicio</TableHead>
+                            <TableHead className="text-center">INTRO</TableHead>
+                            <TableHead className="text-center">M1</TableHead>
+                            <TableHead className="text-center">M2</TableHead>
+                            <TableHead className="text-center">M3</TableHead>
+                            <TableHead className="text-center">M4</TableHead>
                             <TableHead className="text-right">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {users.map((user) => {
-                            // Calculate scores
-                            const scores = modules.map(m => {
-                                const prog = user.progress.find(p => p.moduleId === m.id)
-                                return prog && prog.score ? prog.score : 0
-                            })
-
-                            const totalScore = scores.reduce((a, b) => a + b, 0)
-                            const totalAverage = modules.length > 0 ? (totalScore / modules.length).toFixed(1) : "0"
+                            const getScore = (title: string) => {
+                                const prog = user.progress.find(p => p.module.title.includes(title));
+                                return prog?.score !== null && prog?.score !== undefined ? `${prog.score}%` : "-";
+                            };
 
                             return (
                                 <TableRow key={user.id}>
-                                    <TableCell className="font-medium whitespace-nowrap">{user.surname}, {user.name}</TableCell>
+                                    <TableCell className="font-medium">{user.surname}, {user.name}</TableCell>
                                     <TableCell>{user.email}</TableCell>
                                     <TableCell>{user.company}</TableCell>
                                     <TableCell>
-                                        <Badge variant={user.status === "ACTIVE" ? (user.evaluationValidUntil && new Date() > user.evaluationValidUntil ? "destructive" : "default") : "secondary"}>
-                                            {user.status === "ACTIVE" ? (user.evaluationValidUntil && new Date() > user.evaluationValidUntil ? "Pausado (Tiempo)" : "Activo") : "Pendiente"}
+                                        <Badge variant={user.status === "ACTIVE" ? "default" : "secondary"}>
+                                            {user.status === "ACTIVE" ? "Activo" : "Pendiente"}
                                         </Badge>
                                     </TableCell>
-
-                                    {/* Module Scores */}
-                                    {modules.map(module => {
-                                        const prog = user.progress.find(p => p.moduleId === module.id)
-                                        const hasScore = prog && prog.score !== null
-                                        return (
-                                            <TableCell key={module.id} className="text-center text-xs">
-                                                {hasScore ? (
-                                                    <span className={prog.score! >= 80 ? "text-green-500 font-bold" : "text-red-500"}>
-                                                        {prog.score!.toFixed(0)}%
-                                                    </span>
-                                                ) : (
-                                                    <span className="text-muted-foreground">-</span>
-                                                )}
-                                            </TableCell>
-                                        )
-                                    })}
-
-                                    {/* Total Average */}
-                                    <TableCell className="text-center font-bold text-sm">
-                                        {totalAverage}%
+                                    <TableCell className="text-sm text-muted-foreground">
+                                        {user.createdAt ? user.createdAt.toLocaleDateString() : "---"}
                                     </TableCell>
-
-                                    <TableCell className="text-right space-x-2 whitespace-nowrap">
-                                        <SyncUserButton userId={user.id} />
+                                    <TableCell className="text-center">{getScore("INTRO")}</TableCell>
+                                    <TableCell className="text-center">{getScore("Modulo 1")}</TableCell>
+                                    <TableCell className="text-center">{getScore("Modulo 2")}</TableCell>
+                                    <TableCell className="text-center">{getScore("Modulo 3")}</TableCell>
+                                    <TableCell className="text-center">{getScore("Modulo 4")}</TableCell>
+                                    <TableCell className="text-right space-x-2">
+                                        <UserDetailDialog user={user} />
                                         {user.status === "PENDING" && (
                                             <ApproveUserButton userId={user.id} />
-                                        )}
-                                        {user.status === "ACTIVE" && user.evaluationValidUntil && new Date() > user.evaluationValidUntil && (
-                                            <UnblockUserButton userId={user.id} />
                                         )}
                                         <DeleteUserButton userId={user.id} />
                                     </TableCell>
                                 </TableRow>
-                            )
+                            );
                         })}
                     </TableBody>
                 </Table>

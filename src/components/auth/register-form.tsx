@@ -56,50 +56,9 @@ export const RegisterForm = () => {
                 if (data.success) {
                     setSuccess(data.success)
                     toast.success(data.success)
-                    form.reset()
                 }
             })
         })
-    }
-
-    // If registration was successful, show welcome message
-    if (success) {
-        return (
-            <CardWrapper
-                headerLabel="¡Registro Exitoso!"
-                backButtonLabel="Volver al inicio de sesión"
-                backButtonHref="/login"
-            >
-                <div className="space-y-6 text-center py-8">
-                    <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-                        <svg
-                            className="w-8 h-8 text-primary"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M5 13l4 4L19 7"
-                            />
-                        </svg>
-                    </div>
-                    <div className="space-y-3">
-                        <h3 className="text-2xl font-bold text-foreground">
-                            ¡Bienvenido!
-                        </h3>
-                        <p className="text-muted-foreground text-lg leading-relaxed max-w-md mx-auto">
-                            Nuestro equipo pronto te dará acceso y serás notificado.
-                        </p>
-                        <p className="text-muted-foreground font-semibold">
-                            ¡Gracias!
-                        </p>
-                    </div>
-                </div>
-            </CardWrapper>
-        )
     }
 
     return (

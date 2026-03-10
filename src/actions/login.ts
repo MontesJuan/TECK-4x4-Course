@@ -4,6 +4,7 @@ import * as z from "zod"
 import { signIn } from "@/auth"
 import { LoginSchema } from "@/schemas"
 import { AuthError } from "next-auth"
+import { prisma } from "@/lib/prisma"
 
 export const login = async (values: z.infer<typeof LoginSchema>) => {
     const validatedFields = LoginSchema.safeParse(values)
@@ -18,8 +19,17 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
         await signIn("credentials", {
             username: email,
             password,
-            redirectTo: "/dashboard", // Middleware might override this or we handle redirection in client
+            redirectTo: "/dashboard",
         })
+
+        // Update startedAt if it's the first time
+        const user = await prisma.user.findUnique({ where: { email } })
+        if (user && !user.startedAt) {
+            await prisma.user.update({
+                where: { id: user.id },
+                data: { startedAt: new Date() }
+            })
+        }
     } catch (error) {
         if (error instanceof AuthError) {
             switch (error.type) {

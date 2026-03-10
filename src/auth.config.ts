@@ -21,6 +21,7 @@ export default {
             if (user) {
                 token.role = (user as any).role
                 token.id = user.id
+                token.createdAt = (user as any).createdAt
             }
             return token
         },
@@ -28,6 +29,7 @@ export default {
             if (token) {
                 session.user.role = token.role as "ADMIN" | "USER"
                 session.user.id = token.id as string
+                    ; (session.user as any).createdAt = token.createdAt
             }
             return session
         },

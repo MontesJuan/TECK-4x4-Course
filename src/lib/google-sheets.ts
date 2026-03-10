@@ -38,115 +38,31 @@ export const addToSheet = async (userData: any) => {
             }
         }
 
-        if (targetRow) {
-            targetRow.assign({
-                "Apellido": userData.surname,
-                "Nombre": userData.name,
-                "CUIL/RUT": userData.cuil,
-                "Teléfono": userData.phone,
-                "Email": userData.email,
-                "Empresa": userData.company,
-                "Puesto": userData.position,
-                "Tipo de Licencia": userData.licenseType,
-                "Vencimiento": userData.licenseExpiry.toISOString().split('T')[0],
-                "País": userData.country,
-                "Provincia": userData.province,
-                "Localidad": userData.city,
-                "Estado": "PENDIENTE"
-            });
-            await targetRow.save();
-        } else {
-            // Fallback if no empty rows found
-            await sheet.addRow({
-                "Apellido": userData.surname,
-                "Nombre": userData.name,
-                "CUIL/RUT": userData.cuil,
-                "Teléfono": userData.phone,
-                "Email": userData.email,
-                "Empresa": userData.company,
-                "Puesto": userData.position,
-                "Tipo de Licencia": userData.licenseType,
-                "Vencimiento": userData.licenseExpiry.toISOString().split('T')[0],
-                "País": userData.country,
-                "Provincia": userData.province,
-                "Localidad": userData.city,
-                "Estado": "PENDIENTE"
-            });
-        }
+        const getScoreValue = (keyword: string) => {
+            if (!userData.moduleScores) return null;
+            const key = Object.keys(userData.moduleScores).find(k => k.toLowerCase().includes(keyword.toLowerCase()));
+            return key ? userData.moduleScores[key] : null;
+        };
 
-    } catch (e) {
-        console.error("Error syncing to Google Sheet:", e);
-    }
-}
+        const getScoreString = (keyword: string) => {
+            const val = getScoreValue(keyword);
+            return val !== null ? `${val.toFixed(2)}%` : "";
+        };
 
-
-export const updateUserProgress = async (email: string, progress: Record<string, string | number>, totalAverage: number) => {
-    if (!SPREADSHEET_ID || !GOOGLE_CLIENT_EMAIL || !GOOGLE_PRIVATE_KEY) {
-        console.warn("Google Sheets credentials missing. Skipping sync.");
-        return;
-    }
-
-    try {
-        const serviceAccountAuth = new JWT({
-            email: GOOGLE_CLIENT_EMAIL,
-            key: GOOGLE_PRIVATE_KEY,
-            scopes: [
-                'https://www.googleapis.com/auth/spreadsheets',
-            ],
+        let totalScore = 0;
+        let completedModules = 0;
+        const modulesToCheck = ["Modulo 1", "Modulo 2", "Modulo 3", "Modulo 4", "Modulo 5"];
+        modulesToCheck.forEach(m => {
+            const val = getScoreValue(m);
+            if (val !== null) {
+                totalScore += val;
+                completedModules++;
+            }
         });
+        const average = completedModules > 0 ? (totalScore / completedModules) : 0;
+        const averageStr = completedModules > 0 ? `${average.toFixed(2)}%` : "";
 
-        const doc = new GoogleSpreadsheet(SPREADSHEET_ID, serviceAccountAuth);
-
-        await doc.loadInfo();
-        const sheet = doc.sheetsByIndex[0];
-        await sheet.loadHeaderRow(3); // Headers at Row 3
-
-        const rows = await sheet.getRows();
-        const userRow = rows.find(row => row.get('Email') === email);
-
-        if (userRow) {
-            // Update individual module columns
-            const updates: Record<string, string | number> = { ...progress };
-
-            // Update total average
-            updates['PROMEDIO TOTAL'] = totalAverage.toFixed(2) + '%';
-
-            userRow.assign(updates);
-            await userRow.save();
-        } else {
-            console.warn(`User with email ${email} not found in Google Sheet.`);
-        }
-
-    } catch (e) {
-        console.error("Error syncing progress to Google Sheet:", e);
-    }
-}
-
-export const syncFullUserData = async (userData: any, progress: Record<string, string | number>, totalAverage: number) => {
-    if (!SPREADSHEET_ID || !GOOGLE_CLIENT_EMAIL || !GOOGLE_PRIVATE_KEY) {
-        console.warn("Google Sheets credentials missing. Skipping sync.");
-        return;
-    }
-
-    try {
-        const serviceAccountAuth = new JWT({
-            email: GOOGLE_CLIENT_EMAIL,
-            key: GOOGLE_PRIVATE_KEY,
-            scopes: [
-                'https://www.googleapis.com/auth/spreadsheets',
-            ],
-        });
-
-        const doc = new GoogleSpreadsheet(SPREADSHEET_ID, serviceAccountAuth);
-
-        await doc.loadInfo();
-        const sheet = doc.sheetsByIndex[0];
-        await sheet.loadHeaderRow(3); // Headers at Row 3
-
-        const rows = await sheet.getRows();
-        let userRow = rows.find(row => row.get('Email') === userData.email);
-
-        const rowData: Record<string, string | number> = {
+        const rowData: Record<string, any> = {
             "Apellido": userData.surname,
             "Nombre": userData.name,
             "CUIL/RUT": userData.cuil,
@@ -155,39 +71,34 @@ export const syncFullUserData = async (userData: any, progress: Record<string, s
             "Empresa": userData.company,
             "Puesto": userData.position,
             "Tipo de Licencia": userData.licenseType,
-            "Vencimiento": userData.licenseExpiry ? userData.licenseExpiry.toISOString().split('T')[0] : '',
+            "Vencimiento": userData.licenseExpiry instanceof Date ? userData.licenseExpiry.toISOString().split('T')[0] : userData.licenseExpiry,
             "País": userData.country,
             "Provincia": userData.province,
             "Localidad": userData.city,
-            "Estado": userData.status === "ACTIVE" ? "ACTIVO" : "PENDIENTE",
-            "PROMEDIO TOTAL": totalAverage.toFixed(2) + '%'
+            "MODULO1": getScoreString("Modulo 1"),
+            "MODULO2": getScoreString("Modulo 2"),
+            "MODULO3": getScoreString("Modulo 3"),
+            "MODULO4": getScoreString("Modulo 4"),
+            "MODULO5": getScoreString("Modulo 5"),
+            "PROMEDIO TOTAL": averageStr,
+            "FECHA DE INICIO": userData.createdAt ? (userData.createdAt instanceof Date ? userData.createdAt.toISOString().split('T')[0] : userData.createdAt) : "Pendiente"
         };
 
-        // Add module scores
-        Object.assign(rowData, progress);
-
-        if (userRow) {
-            userRow.assign(rowData);
-            await userRow.save();
+        if (targetRow) {
+            targetRow.assign(rowData);
+            await targetRow.save();
         } else {
-            let targetRow;
-            for (const row of rows) {
-                if (!row.get('Apellido')) {
-                    targetRow = row;
-                    break;
-                }
-            }
-
-            if (targetRow) {
-                targetRow.assign(rowData);
-                await targetRow.save();
+            // Find existing row by email to update if no empty rows
+            const existingRow = rows.find(r => r.get('Email') === userData.email);
+            if (existingRow) {
+                existingRow.assign(rowData);
+                await existingRow.save();
             } else {
                 await sheet.addRow(rowData);
             }
         }
 
     } catch (e) {
-        console.error("Error syncing full user data to Google Sheet:", e);
-        throw e; // Rethrow to let caller know
+        console.error("Error syncing to Google Sheet:", e);
     }
 }

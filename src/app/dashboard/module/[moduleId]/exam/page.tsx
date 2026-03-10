@@ -14,6 +14,11 @@ export default async function ExamPage({ params }: ExamPageProps) {
     const session = await auth()
     if (!session?.user) redirect("/login")
 
+    // We do NOT redirect here anymore.
+    // If we redirect immediately because attempts >= 1, the client-side ExamForm 
+    // will be unmounted by Next.js Server Action revalidation before it can show the result card!
+    // The user can now retake exams and the backend math.max score handles it safely.
+
     const moduleData = await prisma.module.findUnique({
         where: { id: moduleId },
         include: {

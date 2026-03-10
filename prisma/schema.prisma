@@ -8,8 +8,8 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
+  id            String         @id @default(cuid())
+  email         String         @unique
   password      String?
   name          String?
   surname       String?
@@ -22,30 +22,26 @@ model User {
   country       String?
   province      String?
   city          String?
-  evaluationValidUntil DateTime?
-  
-  role          String    @default("USER") // USER, ADMIN
-  status        String    @default("PENDING") // PENDING, ACTIVE, REJECTED
-  
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
+  role          String         @default("USER")
+  status        String         @default("PENDING")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  startedAt     DateTime?
+  answers       UserAnswer[]
   progress      UserProgress[]
 }
 
 model Module {
-  id          String   @id @default(cuid())
+  id          String         @id @default(cuid())
   title       String
   description String?
   videoUrl    String?
-  order       Int      @unique
-  
-  questions   Question[]
+  order       Int            @unique
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
   materials   Material[]
+  questions   Question[]
   progress    UserProgress[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
 }
 
 model Material {
@@ -53,44 +49,56 @@ model Material {
   title     String
   fileUrl   String
   moduleId  String
-  module    Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  module    Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
 }
 
 model Question {
-  id        String   @id @default(cuid())
-  text      String
-  moduleId  String
-  module    Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  options   Option[]
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String       @id @default(cuid())
+  text        String
+  moduleId    String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  options     Option[]
+  module      Module       @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  userAnswers UserAnswer[]
 }
 
 model Option {
-  id         String   @id @default(cuid())
-  text       String
-  isCorrect  Boolean
-  questionId String
-  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  id          String       @id @default(cuid())
+  text        String
+  isCorrect   Boolean
+  questionId  String
+  question    Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  userAnswers UserAnswer[]
 }
 
 model UserProgress {
   id        String   @id @default(cuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   moduleId  String
-  module    Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  
   completed Boolean  @default(false)
-  score     Float?   // Percentage 0-100
+  score     Float?
   attempts  Int      @default(0)
-  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  module    Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, moduleId])
+}
+
+model UserAnswer {
+  id         String   @id @default(cuid())
+  userId     String
+  questionId String
+  optionId   String
+  isCorrect  Boolean
+  createdAt  DateTime @default(now())
+  option     Option   @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, questionId])
 }

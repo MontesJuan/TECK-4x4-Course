@@ -8,28 +8,25 @@ export const Navbar = async () => {
     const session = await auth()
 
     return (
-        <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 h-20 flex items-center px-8 lg:px-12 justify-between transition-all duration-300">
+        <nav className="sticky top-0 z-50 w-full border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md h-20 flex items-center px-4 sm:px-8 justify-between">
             <div className="flex items-center gap-x-8">
                 <Link href="/dashboard" className="flex items-center gap-x-6 group">
-                    {/* Teck Logo */}
-                    <div className="relative h-10 w-24 transition-transform group-hover:scale-105">
-                        <Image
-                            src="/assets/logo-teck.png"
-                            alt="Teck Logo"
-                            fill
-                            className="object-contain"
-                            priority
-                        />
-                    </div>
-                    {/* Divider */}
-                    <div className="h-8 w-[1px] bg-border" />
-                    {/* Nielsen Logo */}
-                    <div className="relative h-12 w-28 transition-transform group-hover:scale-105">
+                    <div className="relative h-10 w-32 transition-transform group-hover:scale-105">
                         <Image
                             src="/assets/logo-nielsen.png"
                             alt="Nielsen Logo"
                             fill
-                            className="object-contain"
+                            className="object-contain object-left filter brightness-0 invert"
+                            priority
+                        />
+                    </div>
+                    <div className="hidden sm:block border-l border-zinc-700 h-8"></div>
+                    <div className="relative h-8 w-24 hidden sm:block transition-transform group-hover:scale-105">
+                        <Image
+                            src="/assets/logo-teck.png"
+                            alt="Teck Logo"
+                            fill
+                            className="object-contain object-left"
                             priority
                         />
                     </div>

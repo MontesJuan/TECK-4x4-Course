@@ -16,15 +16,6 @@ export default async function ModulePage({ params }: ModulePageProps) {
     const session = await auth()
     if (!session?.user) redirect("/login")
 
-    const user = await prisma.user.findUnique({
-        where: { id: session.user.id },
-        select: { evaluationValidUntil: true }
-    })
-
-    if (user?.evaluationValidUntil && new Date() > user.evaluationValidUntil) {
-        redirect("/dashboard")
-    }
-
     const moduleData = await prisma.module.findUnique({
         where: { id: moduleId },
         include: {
@@ -84,17 +75,21 @@ export default async function ModulePage({ params }: ModulePageProps) {
     const videoUrl = moduleData.videoUrl?.replace(/\/view.*/, "/preview")
 
     return (
-        <div className="space-y-8 max-w-4xl mx-auto">
-            <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold">{moduleData.title}</h1>
-                <Button asChild variant={isCompleted ? "outline" : "default"}>
+        <div className="space-y-8 max-w-4xl mx-auto px-4 py-8">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <h1 className="text-4xl font-extrabold tracking-tight text-white drop-shadow-sm">{moduleData.title}</h1>
+                <Button
+                    asChild
+                    size="lg"
+                    className={isCompleted ? "bg-zinc-800 text-zinc-100 hover:bg-zinc-700 hover:text-white" : "bg-white text-black hover:bg-zinc-200 font-semibold shadow-lg hover:shadow-white/20"}
+                >
                     <Link href={`/dashboard/module/${moduleData.id}/exam`}>
                         {isCompleted ? "Ver examen" : "Rendir Examen"}
                     </Link>
                 </Button>
             </div>
 
-            <div className="aspect-video w-full bg-black rounded-lg overflow-hidden shadow-lg">
+            <div className="aspect-video w-full bg-black rounded-2xl overflow-hidden shadow-2xl border border-zinc-800">
                 {videoUrl ? (
                     <iframe
                         src={videoUrl}
@@ -103,32 +98,36 @@ export default async function ModulePage({ params }: ModulePageProps) {
                         allowFullScreen
                     />
                 ) : (
-                    <div className="flex items-center justify-center h-full text-white">Video no disponible</div>
+                    <div className="flex items-center justify-center h-full text-zinc-500 font-light tracking-wide">Video no disponible</div>
                 )}
             </div>
 
-            <div className="grid gap-6 md:grid-cols-3">
+            <div className="grid gap-8 md:grid-cols-3">
                 <div className="md:col-span-2 space-y-4">
-                    <h2 className="text-xl font-semibold">Descripción</h2>
-                    <p className="text-muted-foreground">{moduleData.description}</p>
+                    <h2 className="text-2xl font-bold tracking-tight text-zinc-100 border-b border-zinc-800 pb-2">Descripción</h2>
+                    <p className="text-zinc-400 leading-relaxed text-lg font-light">{moduleData.description}</p>
                 </div>
                 <div className="space-y-4">
-                    <h2 className="text-xl font-semibold">Material de Estudio</h2>
+                    <h2 className="text-2xl font-bold tracking-tight text-zinc-100 border-b border-zinc-800 pb-2">Material de Estudio</h2>
                     {moduleData.materials.length > 0 ? (
-                        <ul className="space-y-2">
+                        <ul className="space-y-3">
                             {moduleData.materials.map((material) => (
                                 <li key={material.id}>
-                                    <Button variant="outline" className="w-full justify-start" asChild>
+                                    <Button
+                                        variant="outline"
+                                        className="w-full justify-start bg-zinc-900 border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 hover:border-zinc-500 transition-colors h-auto py-3 px-4"
+                                        asChild
+                                    >
                                         <a href={material.fileUrl} target="_blank" rel="noopener noreferrer">
-                                            <FileText className="mr-2 h-4 w-4" />
-                                            {material.title}
+                                            <FileText className="mr-3 h-5 w-5 text-zinc-400" />
+                                            <span className="truncate">{material.title}</span>
                                         </a>
                                     </Button>
                                 </li>
                             ))}
                         </ul>
                     ) : (
-                        <p className="text-sm text-muted-foreground">No hay material adjunto.</p>
+                        <p className="text-base text-zinc-500 italic">No hay material adjunto.</p>
                     )}
                 </div>
             </div>
