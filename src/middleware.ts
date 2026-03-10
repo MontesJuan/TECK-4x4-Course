@@ -7,7 +7,7 @@ export default auth((req) => {
     const isLoggedIn = !!req.auth
     const isAuthRoute = req.nextUrl.pathname.startsWith("/login") || req.nextUrl.pathname.startsWith("/register")
     const isApiAuthRoute = req.nextUrl.pathname.startsWith("/api/auth")
-    const isPublicRoute = req.nextUrl.pathname === "/" || req.nextUrl.pathname.startsWith("/public")
+    const isPublicRoute = req.nextUrl.pathname === "/" || req.nextUrl.pathname.startsWith("/assets") || req.nextUrl.pathname.startsWith("/public")
     const isCertificateRoute = req.nextUrl.pathname.startsWith("/api/certificate")
     const isBlockedRoute = req.nextUrl.pathname.startsWith("/blocked")
 
@@ -48,5 +48,5 @@ export default auth((req) => {
 })
 
 export const config = {
-    matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+    matcher: ["/((?!api|_next/static|_next/image|favicon.ico|assets).*)"],
 }
