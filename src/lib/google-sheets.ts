@@ -28,15 +28,6 @@ export const addToSheet = async (userData: any) => {
         await sheet.loadHeaderRow(3); // Headers at Row 3
 
         const rows = await sheet.getRows();
-        let targetRow;
-
-        // Find first empty row (where Apellido is missing)
-        for (const row of rows) {
-            if (!row.get('Apellido')) {
-                targetRow = row;
-                break;
-            }
-        }
 
         const getScoreValue = (keyword: string) => {
             if (!userData.moduleScores) return null;
@@ -84,15 +75,18 @@ export const addToSheet = async (userData: any) => {
             "FECHA DE INICIO": userData.createdAt ? (userData.createdAt instanceof Date ? userData.createdAt.toISOString().split('T')[0] : userData.createdAt) : "Pendiente"
         };
 
-        if (targetRow) {
-            targetRow.assign(rowData);
-            await targetRow.save();
+        // Find existing row by email
+        const existingRow = rows.find(r => r.get('Email') === userData.email);
+
+        if (existingRow) {
+            existingRow.assign(rowData);
+            await existingRow.save();
         } else {
-            // Find existing row by email to update if no empty rows
-            const existingRow = rows.find(r => r.get('Email') === userData.email);
-            if (existingRow) {
-                existingRow.assign(rowData);
-                await existingRow.save();
+            // Find first empty row (where Apellido and Email are missing)
+            const emptyRow = rows.find(r => !r.get('Apellido') && !r.get('Email'));
+            if (emptyRow) {
+                emptyRow.assign(rowData);
+                await emptyRow.save();
             } else {
                 await sheet.addRow(rowData);
             }
