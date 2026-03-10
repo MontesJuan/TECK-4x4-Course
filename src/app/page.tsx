@@ -19,7 +19,7 @@ export default async function Home() {
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="/assets/images.png"
+          src="/assets/teck-bg.png"
           alt="Offroad Background"
           fill
           className="object-cover opacity-60"

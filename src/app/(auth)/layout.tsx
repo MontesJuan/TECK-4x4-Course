@@ -11,7 +11,7 @@ const AuthLayout = ({
                 <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12">
                     <div className="absolute inset-0 z-0">
                         <img
-                            src="/assets/images.png"
+                            src="/assets/teck-bg.png"
                             alt="Background offroad"
                             className="w-full h-full object-cover opacity-50 grayscale-[20%]"
                         />
