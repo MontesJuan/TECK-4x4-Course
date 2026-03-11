@@ -91,7 +91,7 @@ export async function GET(req: Request) {
 
     firstPage.drawText(dniText, {
         x: (width / 2) - (dniTextWidth / 2),
-        y: (height / 2) - 35, // Espacio blanco debajo de las líneas de punto
+        y: (height / 2) - 12, // Espacio blanco justo debajo de la línea de punto (y antes del texto 'Ha participado...')
         size: dniFontSize,
         font: helveticaRegular,
         color: rgb(0.3, 0.3, 0.3),
