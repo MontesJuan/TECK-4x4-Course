@@ -96,21 +96,36 @@ export const addToSheet = async (userData: any) => {
             "FECHA DE INICIO": formatDateToDDMMYYYY(userData.createdAt)
         };
 
-        // Find existing row by email
+        let targetRowIndex: number;
         const existingRow = rows.find(r => r.get('Email')?.trim().toLowerCase() === userData.email?.trim().toLowerCase());
 
         if (existingRow) {
             existingRow.assign(rowData);
             await existingRow.save();
+            targetRowIndex = existingRow.rowNumber;
         } else {
             // Find first empty row (where Apellido and Email are missing)
             const emptyRow = rows.find(r => !r.get('Apellido') && !r.get('Email'));
             if (emptyRow) {
                 emptyRow.assign(rowData);
                 await emptyRow.save();
+                targetRowIndex = emptyRow.rowNumber;
             } else {
-                await sheet.addRow(rowData);
+                const newRow = await sheet.addRow(rowData);
+                targetRowIndex = newRow.rowNumber;
             }
+        }
+
+        try {
+            await sheet.loadCells(`A${targetRowIndex}:S${targetRowIndex}`);
+            for (let i = 0; i < 19; i++) {
+                const cell = sheet.getCell(targetRowIndex - 1, i);
+                cell.textFormat = { foregroundColor: { red: 0, green: 0, blue: 0 } };
+            }
+            await sheet.saveUpdatedCells();
+            console.log(`Updated formatting to black for row ${targetRowIndex}`);
+        } catch (colorError) {
+            console.error("Error setting color format:", colorError);
         }
 
     } catch (e) {
