@@ -13,7 +13,7 @@ const AuthLayout = ({
                         <img
                             src="/assets/teck-bg.png"
                             alt="Background offroad"
-                            className="w-full h-full object-cover opacity-50 grayscale-[20%]"
+                            className="w-full h-full object-cover opacity-80"
                         />
                         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent z-10" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10" />

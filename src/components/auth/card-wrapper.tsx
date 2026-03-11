@@ -21,6 +21,10 @@ export const CardWrapper = ({
     return (
         <Card className="w-full shadow-2xl border-zinc-800 bg-black/40 backdrop-blur-sm text-zinc-100 p-2 md:p-6 rounded-2xl">
             <CardHeader>
+                <div className="w-full flex items-center justify-between mb-2">
+                    <img src="/assets/logo-teck.png" alt="Teck Logo" className="h-8 object-contain" />
+                    <img src="/assets/logo-nielsen.png" alt="Nielsen Logo" className="h-10 object-contain" />
+                </div>
                 <div className="w-full flex flex-col gap-y-2 items-center justify-center">
                     <p className="text-zinc-400 text-sm text-center font-light uppercase tracking-widest">{headerLabel}</p>
                 </div>

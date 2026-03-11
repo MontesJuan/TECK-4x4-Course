@@ -61,6 +61,39 @@ export const RegisterForm = () => {
         })
     }
 
+    if (success) {
+        return (
+            <CardWrapper
+                headerLabel="Registro completado"
+                backButtonLabel="Volver al inicio de sesión"
+                backButtonHref="/login"
+            >
+                <div className="flex flex-col items-center justify-center space-y-4 py-8 text-center">
+                    <div className="h-12 w-12 rounded-full bg-green-500/20 flex items-center justify-center">
+                        <svg className="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <div className="space-y-2">
+                        <h3 className="text-xl font-bold text-white">¡Registro Exitoso!</h3>
+                        <p className="text-zinc-400">
+                            Tu solicitud ha sido enviada correctamente. 
+                            <span className="block font-semibold text-zinc-100 mt-2">
+                                Tu cuenta está pendiente de aprobación por un administrador.
+                            </span>
+                        </p>
+                        <p className="text-sm text-zinc-500">
+                            Te enviaremos un correo una vez que seas habilitado para ingresar.
+                        </p>
+                    </div>
+                    <Button asChild className="w-full mt-6">
+                        <a href="/login">Ir al Login</a>
+                    </Button>
+                </div>
+            </CardWrapper>
+        )
+    }
+
     return (
         <CardWrapper
             headerLabel="Crear una cuenta"
