@@ -14,6 +14,13 @@ async function main() {
             description: "Conceptos básicos de seguridad vial, siniestros y normativas.",
             videoUrl: "https://drive.google.com/file/d/1PjJjNMYTl0flM4srgdM76Je_kFPfdhCk/preview",
             order: 1,
+            materials: {
+                create: [
+                    { title: "TDA-EX-PRO-003_Equipo Móvil (Rev. 02)", fileUrl: "/assets/TDA-EX-PRO-003_Equipo Móvil (Rev. 02).pdf" },
+                    { title: "TDA-EX-PRO-002_Vehículos Livianos (Rev. 02)", fileUrl: "/assets/TDA-EX-PRO-002_Vehículos Livianos (Rev. 02).pdf" },
+                    { title: "TDA-EX-PLN-005_Plan de Tránsito (Rev. 04)", fileUrl: "/assets/TDA-EX-PLN-005_Plan de Tránsito (Rev. 04).pdf" },
+                ],
+            },
             questions: {
                 create: [
                     {
@@ -181,6 +188,13 @@ async function main() {
             description: "Técnicas de manejo defensivo y prevención de riesgos.",
             videoUrl: "https://drive.google.com/file/d/1zVCm9zCkVpDv2DaA7-4VXbZ_rJzty5EB/preview",
             order: 2,
+            materials: {
+                create: [
+                    { title: "TDA-EX-PRO-003_Equipo Móvil (Rev. 02)", fileUrl: "/assets/TDA-EX-PRO-003_Equipo Móvil (Rev. 02).pdf" },
+                    { title: "TDA-EX-PRO-002_Vehículos Livianos (Rev. 02)", fileUrl: "/assets/TDA-EX-PRO-002_Vehículos Livianos (Rev. 02).pdf" },
+                    { title: "TDA-EX-PLN-005_Plan de Tránsito (Rev. 04)", fileUrl: "/assets/TDA-EX-PLN-005_Plan de Tránsito (Rev. 04).pdf" },
+                ],
+            },
             questions: {
                 create: [
                     {
@@ -314,6 +328,13 @@ async function main() {
             description: "Operación de vehículos, modos 4x4 y técnicas off-road.",
             videoUrl: "https://drive.google.com/file/d/1JDsjo8jqkl0ZSLN7QTDlgPCISsDQBH66/preview",
             order: 3,
+            materials: {
+                create: [
+                    { title: "TDA-EX-PRO-003_Equipo Móvil (Rev. 02)", fileUrl: "/assets/TDA-EX-PRO-003_Equipo Móvil (Rev. 02).pdf" },
+                    { title: "TDA-EX-PRO-002_Vehículos Livianos (Rev. 02)", fileUrl: "/assets/TDA-EX-PRO-002_Vehículos Livianos (Rev. 02).pdf" },
+                    { title: "TDA-EX-PLN-005_Plan de Tránsito (Rev. 04)", fileUrl: "/assets/TDA-EX-PLN-005_Plan de Tránsito (Rev. 04).pdf" },
+                ],
+            },
             questions: {
                 create: [
                     {
@@ -434,6 +455,13 @@ async function main() {
             description: "Mantenimiento, equipamiento y cuidado del vehículo.",
             videoUrl: "https://drive.google.com/file/d/1wt9nHY3unPSHYtFPn1PZVeM374YHeo9i/preview",
             order: 4,
+            materials: {
+                create: [
+                    { title: "TDA-EX-PRO-003_Equipo Móvil (Rev. 02)", fileUrl: "/assets/TDA-EX-PRO-003_Equipo Móvil (Rev. 02).pdf" },
+                    { title: "TDA-EX-PRO-002_Vehículos Livianos (Rev. 02)", fileUrl: "/assets/TDA-EX-PRO-002_Vehículos Livianos (Rev. 02).pdf" },
+                    { title: "TDA-EX-PLN-005_Plan de Tránsito (Rev. 04)", fileUrl: "/assets/TDA-EX-PLN-005_Plan de Tránsito (Rev. 04).pdf" },
+                ],
+            },
             questions: {
                 create: [
                     {
