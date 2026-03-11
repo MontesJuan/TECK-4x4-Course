@@ -3,6 +3,7 @@
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import Image from "next/image"
 
 interface CardWrapperProps {
     children: React.ReactNode
@@ -22,8 +23,12 @@ export const CardWrapper = ({
         <Card className="w-full shadow-2xl border-zinc-800 bg-black/40 backdrop-blur-sm text-zinc-100 p-2 md:p-6 rounded-2xl">
             <CardHeader>
                 <div className="w-full flex items-center justify-between mb-2">
-                    <img src="/assets/logo-teck.png" alt="Teck Logo" className="h-8 object-contain" />
-                    <img src="/assets/logo-nielsen.png" alt="Nielsen Logo" className="h-10 object-contain" />
+                    <div className="relative h-8 w-24">
+                        <Image src="/assets/logo-teck.png" alt="Teck Logo" fill className="object-contain" priority />
+                    </div>
+                    <div className="relative h-10 w-32">
+                        <Image src="/assets/logo-nielsen.png" alt="Nielsen Logo" fill className="object-contain" priority />
+                    </div>
                 </div>
                 <div className="w-full flex flex-col gap-y-2 items-center justify-center">
                     <p className="text-zinc-400 text-sm text-center font-light uppercase tracking-widest">{headerLabel}</p>

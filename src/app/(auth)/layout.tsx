@@ -1,3 +1,4 @@
+import Image from "next/image"
 
 const AuthLayout = ({
     children
@@ -9,11 +10,13 @@ const AuthLayout = ({
             <div className="w-full flex">
                 {/* Left Side - Visual */}
                 <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12">
-                    <div className="absolute inset-0 z-0">
-                        <img
+                    <div className="absolute inset-0 z-0 text-white">
+                        <Image
                             src="/assets/teck-bg.png"
                             alt="Background offroad"
-                            className="w-full h-full object-cover opacity-80"
+                            fill
+                            className="object-cover opacity-80"
+                            priority
                         />
                         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent z-10" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10" />
@@ -21,16 +24,24 @@ const AuthLayout = ({
 
                     {/* Logos at top left */}
                     <div className="relative z-20 flex flex-col gap-6">
-                        <img
-                            src="/assets/logo-nielsen.png"
-                            alt="Nielsen Logo"
-                            className="w-48 object-contain"
-                        />
-                        <img
-                            src="/assets/logo-teck.png"
-                            alt="Teck Logo"
-                            className="w-32 object-contain"
-                        />
+                        <div className="relative w-48 h-12">
+                            <Image
+                                src="/assets/logo-nielsen.png"
+                                alt="Nielsen Logo"
+                                fill
+                                className="object-contain object-left"
+                                priority
+                            />
+                        </div>
+                        <div className="relative w-32 h-10">
+                            <Image
+                                src="/assets/logo-teck.png"
+                                alt="Teck Logo"
+                                fill
+                                className="object-contain object-left"
+                                priority
+                            />
+                        </div>
                     </div>
 
                     <div className="relative z-20 mt-auto max-w-lg">
@@ -49,16 +60,24 @@ const AuthLayout = ({
                 <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-zinc-950 relative">
                     {/* Mobile Logos (hidden on desktop) */}
                     <div className="absolute top-8 left-8 flex flex-col gap-4 lg:hidden z-20">
-                        <img
-                            src="/assets/logo-nielsen.png"
-                            alt="Nielsen Logo"
-                            className="w-32 object-contain"
-                        />
-                        <img
-                            src="/assets/logo-teck.png"
-                            alt="Teck Logo"
-                            className="w-24 object-contain"
-                        />
+                        <div className="relative w-32 h-8">
+                            <Image
+                                src="/assets/logo-nielsen.png"
+                                alt="Nielsen Logo"
+                                fill
+                                className="object-contain object-left"
+                                priority
+                            />
+                        </div>
+                        <div className="relative w-24 h-8">
+                            <Image
+                                src="/assets/logo-teck.png"
+                                alt="Teck Logo"
+                                fill
+                                className="object-contain object-left"
+                                priority
+                            />
+                        </div>
                     </div>
 
                     <div className="w-full max-w-md space-y-8 z-10 pt-24 lg:pt-0">
