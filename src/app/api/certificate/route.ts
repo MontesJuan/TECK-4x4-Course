@@ -68,18 +68,33 @@ export async function GET(req: Request) {
         color: rgb(0.2, 0.2, 0.2), // Dark grey for a more elegant look
     })
 
-    // Add DNI / CUIL
-    const dniText = `DNI / CUIL: ${user.cuil || 'No informado'}`
+    // Add DNI
+    let dniRaw = user.cuil || "No informado"
+    let parsedDni = dniRaw
+    if (dniRaw !== "No informado") {
+        const numbersOnly = dniRaw.replace(/\D/g, '')
+        let dniNumbers = numbersOnly
+        if (numbersOnly.length === 11) {
+            dniNumbers = numbersOnly.substring(2, numbersOnly.length - 1)
+        }
+        if (dniNumbers.length >= 7 && dniNumbers.length <= 8) {
+            parsedDni = dniNumbers.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        } else {
+            parsedDni = dniNumbers || dniRaw
+        }
+    }
+
+    const dniText = `DNI: ${parsedDni}`
     const helveticaRegular = await pdfDoc.embedFont(StandardFonts.Helvetica)
-    const dniFontSize = 16
+    const dniFontSize = 10 // Letra chica
     const dniTextWidth = helveticaRegular.widthOfTextAtSize(dniText, dniFontSize)
 
     firstPage.drawText(dniText, {
-        x: (width / 2) - (dniTextWidth / 2), // Perfect horizontal centering
-        y: (height / 2) - 25, // Lowered beneath the name
+        x: (width / 2) - (dniTextWidth / 2),
+        y: (height / 2) - 35, // Espacio blanco debajo de las líneas de punto
         size: dniFontSize,
         font: helveticaRegular,
-        color: rgb(0.4, 0.4, 0.4), // Lighter grey for subtitle
+        color: rgb(0.3, 0.3, 0.3),
     })
 
     const pdfBytes = await pdfDoc.save()

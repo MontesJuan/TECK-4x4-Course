@@ -10,116 +10,129 @@ interface SubmitExamPayload {
 }
 
 export const submitExam = async ({ moduleId, answers }: SubmitExamPayload) => {
-    const session = await auth()
-    if (!session?.user) return { error: "No autorizado" }
+    try {
+        const session = await auth()
+        if (!session?.user) return { error: "No autorizado" }
 
-    const existingProgressCheck = await prisma.userProgress.findUnique({
-        where: {
-            userId_moduleId: {
-                userId: session.user.id,
-                moduleId: moduleId
-            }
-        }
-    })
-
-    if (existingProgressCheck && existingProgressCheck.attempts >= 1) {
-        return { error: "Ya has agotado tu único intento para este módulo." }
-    }
-
-    // Fetch module questions and correct options
-    const moduleData = await prisma.module.findUnique({
-        where: { id: moduleId },
-        include: {
-            questions: {
-                include: { options: true }
-            }
-        }
-    })
-
-    if (!moduleData) return { error: "Módulo no encontrado" }
-
-    let correctCount = 0
-    const totalQuestions = moduleData.questions.length
-
-    if (totalQuestions === 0) return { error: "Este módulo no tiene preguntas configuradas." }
-
-    const userAnswersToSave = []
-
-    // Calculate Score and Prepare UserAnswers
-    for (const q of moduleData.questions) {
-        const selectedOptionId = answers[q.id]
-        if (!selectedOptionId) continue
-
-        const correctOption = q.options.find(o => o.isCorrect)
-        const isCorrect = selectedOptionId === correctOption?.id
-
-        if (isCorrect) {
-            correctCount++
-        }
-
-        userAnswersToSave.push({
-            userId: session.user.id,
-            questionId: q.id,
-            optionId: selectedOptionId,
-            isCorrect: isCorrect
-        })
-    }
-
-    const scorePercentage = (correctCount / totalQuestions) * 100
-    const passed = scorePercentage >= 80
-
-    // Update Progress
-    // We increment attempts.
-    // If passed, we set completed = true.
-    // We update score (keep highest? or latest? usually highest or latest. Let's keep latest for now, or ensure we don't regress complete status)
-
-    await prisma.userProgress.upsert({
-        where: {
-            userId_moduleId: {
-                userId: session.user.id,
-                moduleId: moduleId
-            }
-        },
-        update: {
-            completed: true, // Always completed just by attempting it
-            score: scorePercentage, // only one attempt so this is the final score
-            attempts: { increment: 1 }
-        },
-        create: {
-            userId: session.user.id,
-            moduleId: moduleId,
-            completed: true,
-            score: scorePercentage,
-            attempts: 1
-        }
-    })
-
-    // Save detailed answers sequentially to avoid connection pool exhaustion
-    for (const ua of userAnswersToSave) {
-        await prisma.userAnswer.upsert({
+        const existingProgressCheck = await prisma.userProgress.findUnique({
             where: {
-                userId_questionId: {
-                    userId: ua.userId,
-                    questionId: ua.questionId
+                userId_moduleId: {
+                    userId: session.user.id,
+                    moduleId: moduleId
+                }
+            }
+        })
+
+        if (existingProgressCheck && existingProgressCheck.attempts >= 1) {
+            return { error: "Ya has agotado tu único intento para este módulo." }
+        }
+
+        // Fetch module questions and correct options
+        const moduleData = await prisma.module.findUnique({
+            where: { id: moduleId },
+            include: {
+                questions: {
+                    include: { options: true }
+                }
+            }
+        })
+
+        if (!moduleData) return { error: "Módulo no encontrado" }
+
+        let correctCount = 0
+        const totalQuestions = moduleData.questions.length
+
+        if (totalQuestions === 0) return { error: "Este módulo no tiene preguntas configuradas." }
+
+        const userAnswersToSave = []
+
+        // Calculate Score and Prepare UserAnswers
+        for (const q of moduleData.questions) {
+            const selectedOptionId = answers[q.id]
+            if (!selectedOptionId) continue
+
+            const correctOption = q.options.find(o => o.isCorrect)
+            const isCorrect = selectedOptionId === correctOption?.id
+
+            if (isCorrect) {
+                correctCount++
+            }
+
+            userAnswersToSave.push({
+                userId: session.user.id,
+                questionId: q.id,
+                optionId: selectedOptionId,
+                isCorrect: isCorrect
+            })
+        }
+
+        const scorePercentage = (correctCount / totalQuestions) * 100
+        const passed = scorePercentage >= 80
+
+        // Update Progress
+        // We increment attempts.
+        // If passed, we set completed = true.
+        // We update score (keep highest? or latest? usually highest or latest. Let's keep latest for now, or ensure we don't regress complete status)
+
+        await prisma.userProgress.upsert({
+            where: {
+                userId_moduleId: {
+                    userId: session.user.id,
+                    moduleId: moduleId
                 }
             },
             update: {
-                optionId: ua.optionId,
-                isCorrect: ua.isCorrect
+                completed: true, // Always completed just by attempting it
+                score: scorePercentage, // only one attempt so this is the final score
+                attempts: { increment: 1 }
             },
-            create: ua
+            create: {
+                userId: session.user.id,
+                moduleId: moduleId,
+                completed: true,
+                score: scorePercentage,
+                attempts: 1
+            }
         })
-    }
 
-    revalidatePath("/dashboard")
-    revalidatePath(`/dashboard/module/${moduleId}`)
+        // Save detailed answers sequentially to avoid connection pool exhaustion
+        for (const ua of userAnswersToSave) {
+            await prisma.userAnswer.upsert({
+                where: {
+                    userId_questionId: {
+                        userId: ua.userId,
+                        questionId: ua.questionId
+                    }
+                },
+                update: {
+                    optionId: ua.optionId,
+                    isCorrect: ua.isCorrect
+                },
+                create: ua
+            })
+        }
 
-    return {
-        success: true,
-        passed,
-        score: scorePercentage,
-        correctCount,
-        totalQuestions
+        revalidatePath("/dashboard")
+        revalidatePath(`/dashboard/module/${moduleId}`)
+
+        const allModules = await prisma.module.findMany({
+            orderBy: { order: "asc" },
+            select: { id: true }
+        })
+        const currentIndex = allModules.findIndex(m => m.id === moduleId)
+        const nextModuleId = currentIndex >= 0 && currentIndex < allModules.length - 1 ? allModules[currentIndex + 1].id : null
+
+        return {
+            success: true,
+            passed,
+            score: scorePercentage,
+            correctCount,
+            totalQuestions,
+            nextModuleId
+        }
+    } catch (e: any) {
+        console.error("Unhandeled error in submitExam:", e)
+        return { error: `Server Error: ${e.message || "Internal Exception"}` }
     }
 }
 
@@ -137,9 +150,11 @@ export const syncExamToSheets = async () => {
             const moduleScores: Record<string, number> = {};
             user.progress.forEach(p => {
                 if (p.score !== null) {
-                    moduleScores[p.module.title] = p.score;
+                    moduleScores[p.module.title.trim()] = p.score;
                 }
             });
+
+            console.log("DEBUG: Generated moduleScores payload:", moduleScores);
 
             const { addToSheet } = await import("@/lib/google-sheets");
             await addToSheet({

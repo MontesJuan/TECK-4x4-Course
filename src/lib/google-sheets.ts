@@ -32,6 +32,12 @@ export const addToSheet = async (userData: any) => {
         const getScoreValue = (keyword: string) => {
             if (!userData.moduleScores) return null;
             const key = Object.keys(userData.moduleScores).find(k => k.toLowerCase().includes(keyword.toLowerCase()));
+            if (keyword.toLowerCase() === "intro") {
+                console.log("DEBUG getScoreValue for Intro:");
+                console.log(" - moduleScores keys available:", Object.keys(userData.moduleScores));
+                console.log(" - matched key:", key);
+                console.log(" - value:", key ? userData.moduleScores[key] : "null");
+            }
             return key ? userData.moduleScores[key] : null;
         };
 
@@ -40,9 +46,24 @@ export const addToSheet = async (userData: any) => {
             return val !== null ? `${val.toFixed(2)}%` : "";
         };
 
+        const formatDateToDDMMYYYY = (dateValue: any) => {
+            if (!dateValue || dateValue === "Pendiente") return "Pendiente";
+            const date = new Date(dateValue);
+            // Validating if parsing generated an invalid result. If so, return original.
+            if (isNaN(date.getTime())) return String(dateValue);
+            
+            // Getting components and using local mapping if timezones matter
+            // Let's use UTC getter for date to guarantee stable dates from strings like "2024-03-10T00:00:00.000Z"
+            // Wait, standard Date uses local timezone. We'll add padding.
+            const d = date.getDate().toString().padStart(2, '0');
+            const m = (date.getMonth() + 1).toString().padStart(2, '0');
+            const y = date.getFullYear();
+            return `${d}/${m}/${y}`;
+        };
+
         let totalScore = 0;
         let completedModules = 0;
-        const modulesToCheck = ["Modulo 1", "Modulo 2", "Modulo 3", "Modulo 4", "Modulo 5"];
+        const modulesToCheck = ["Intro", "Modulo 1", "Modulo 2", "Modulo 3", "Modulo 4"];
         modulesToCheck.forEach(m => {
             const val = getScoreValue(m);
             if (val !== null) {
@@ -62,21 +83,21 @@ export const addToSheet = async (userData: any) => {
             "Empresa": userData.company,
             "Puesto": userData.position,
             "Tipo de Licencia": userData.licenseType,
-            "Vencimiento": userData.licenseExpiry instanceof Date ? userData.licenseExpiry.toISOString().split('T')[0] : userData.licenseExpiry,
+            "Vencimiento": formatDateToDDMMYYYY(userData.licenseExpiry),
             "País": userData.country,
             "Provincia": userData.province,
             "Localidad": userData.city,
+            "INTRO": getScoreString("Intro"),
             "MODULO1": getScoreString("Modulo 1"),
             "MODULO2": getScoreString("Modulo 2"),
             "MODULO3": getScoreString("Modulo 3"),
             "MODULO4": getScoreString("Modulo 4"),
-            "MODULO5": getScoreString("Modulo 5"),
             "PROMEDIO TOTAL": averageStr,
-            "FECHA DE INICIO": userData.createdAt ? (userData.createdAt instanceof Date ? userData.createdAt.toISOString().split('T')[0] : userData.createdAt) : "Pendiente"
+            "FECHA DE INICIO": formatDateToDDMMYYYY(userData.createdAt)
         };
 
         // Find existing row by email
-        const existingRow = rows.find(r => r.get('Email') === userData.email);
+        const existingRow = rows.find(r => r.get('Email')?.trim().toLowerCase() === userData.email?.trim().toLowerCase());
 
         if (existingRow) {
             existingRow.assign(rowData);

@@ -33,6 +33,7 @@ export const ExamForm = ({ moduleId, questions }: ExamFormProps) => {
         score: number
         correctCount: number
         totalQuestions: number
+        nextModuleId?: string | null
     } | null>(null)
 
     const handleOptionSelect = (questionId: string, optionId: string) => {
@@ -65,7 +66,8 @@ export const ExamForm = ({ moduleId, questions }: ExamFormProps) => {
                     passed: data.passed ?? false,
                     score: data.score ?? 0,
                     correctCount: data.correctCount ?? 0,
-                    totalQuestions: data.totalQuestions ?? 0
+                    totalQuestions: data.totalQuestions ?? 0,
+                    nextModuleId: data.nextModuleId
                 })
 
                 // Disparar sincronización con Sheets en segundo plano sin bloquear UI
@@ -115,13 +117,27 @@ export const ExamForm = ({ moduleId, questions }: ExamFormProps) => {
                         </div>
                     </div>
                 </CardContent>
-                <CardFooter className="flex justify-center pb-8">
+                <CardFooter className="flex flex-col sm:flex-row justify-center gap-4 pb-8 w-full">
                     <Button
                         size="lg"
-                        className="bg-white text-black hover:bg-zinc-200 font-bold px-12 py-6 rounded-full text-lg shadow-xl hover:shadow-white/20 transition-all hover:scale-105"
+                        variant="outline"
+                        className="border-zinc-700 bg-transparent text-white hover:bg-zinc-800 font-bold px-8 py-6 rounded-full text-lg shadow-xl transition-all"
                         onClick={() => router.push("/dashboard")}
                     >
-                        Siguiente →
+                        Volver al panel
+                    </Button>
+                    <Button
+                        size="lg"
+                        className="bg-white text-black hover:bg-zinc-200 font-bold px-8 py-6 rounded-full text-lg shadow-xl hover:shadow-white/20 transition-all hover:scale-105"
+                        onClick={() => {
+                            if (result.nextModuleId) {
+                                router.push(`/dashboard/module/${result.nextModuleId}`)
+                            } else {
+                                router.push("/dashboard")
+                            }
+                        }}
+                    >
+                        {result.nextModuleId ? "Siguiente Módulo →" : "Ir al panel →"}
                     </Button>
                 </CardFooter>
             </Card>
