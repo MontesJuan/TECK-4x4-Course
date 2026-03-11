@@ -31,13 +31,21 @@ export const addToSheet = async (userData: any) => {
 
         const getScoreValue = (keyword: string) => {
             if (!userData.moduleScores) return null;
-            const key = Object.keys(userData.moduleScores).find(k => k.toLowerCase().includes(keyword.toLowerCase()));
-            if (keyword.toLowerCase() === "intro") {
-                console.log("DEBUG getScoreValue for Intro:");
-                console.log(" - moduleScores keys available:", Object.keys(userData.moduleScores));
-                console.log(" - matched key:", key);
-                console.log(" - value:", key ? userData.moduleScores[key] : "null");
-            }
+            
+            // Handle INTRO specifically or general keyword matching
+            const key = Object.keys(userData.moduleScores).find(k => {
+                const lowerK = k.toLowerCase();
+                const lowerKeyword = keyword.toLowerCase();
+                
+                // Exact match or includes
+                if (lowerK.includes(lowerKeyword)) return true;
+                
+                // Special case for accented "Módulo" vs "Modulo"
+                if (lowerKeyword.startsWith("modulo") && lowerK.includes("módulo")) return true;
+                
+                return false;
+            });
+
             return key ? userData.moduleScores[key] : null;
         };
 
