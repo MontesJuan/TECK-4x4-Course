@@ -91,7 +91,7 @@ export default async function ModulePage({ params }: ModulePageProps) {
                     <Button
                         asChild
                         size="lg"
-                        className="bg-white text-black hover:bg-zinc-200 font-bold shadow-lg hover:shadow-white/20"
+                        className="bg-white text-zinc-950 hover:bg-zinc-200 font-bold shadow-lg hover:shadow-white/20"
                     >
                         <Link href={`/dashboard/module/${moduleData.id}/exam`}>
                             Rendir Examen

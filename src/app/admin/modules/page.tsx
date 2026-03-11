@@ -28,7 +28,7 @@ export default async function AdminModulesPage() {
                 </Button>
             </div>
 
-            <div className="bg-white text-black rounded-md shadow border">
+            <div className="bg-white text-zinc-950 rounded-md shadow border">
                 <Table>
                     <TableHeader>
                         <TableRow>

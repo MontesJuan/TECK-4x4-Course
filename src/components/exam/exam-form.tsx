@@ -128,7 +128,7 @@ export const ExamForm = ({ moduleId, questions }: ExamFormProps) => {
                     </Button>
                     <Button
                         size="lg"
-                        className="bg-white text-black hover:bg-zinc-200 font-bold px-8 py-6 rounded-full text-lg shadow-xl hover:shadow-white/20 transition-all hover:scale-105"
+                        className="bg-white text-zinc-950 hover:bg-zinc-200 font-bold px-8 py-6 rounded-full text-lg shadow-xl hover:shadow-white/20 transition-all hover:scale-105"
                         onClick={() => {
                             if (result.nextModuleId) {
                                 router.push(`/dashboard/module/${result.nextModuleId}`)

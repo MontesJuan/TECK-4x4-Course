@@ -57,7 +57,7 @@ export default async function Home() {
         <div className="pt-8">
           <Button
             size="lg"
-            className="bg-white text-black hover:bg-zinc-200 transition-all rounded-full px-8 py-6 text-lg font-medium tracking-wide shadow-2xl hover:scale-105"
+            className="bg-white text-zinc-950 hover:bg-zinc-200 transition-all rounded-full px-8 py-6 text-lg font-medium tracking-wide shadow-2xl hover:scale-105"
             asChild
           >
             <Link href="/login">

@@ -35,7 +35,7 @@ export default async function ExamPage({ params }: ExamPageProps) {
                     Ya has utilizado tu único intento para este módulo. Obtuviste una calificación de <span className="font-bold text-white text-xl">{progress.score?.toFixed(0) ?? 0}%</span>.
                 </p>
                 <div className="mt-4">
-                    <Button asChild size="lg" className="bg-white text-black hover:bg-zinc-200 font-bold px-10 rounded-full transition-transform hover:scale-105 shadow-xl">
+                    <Button asChild size="lg" className="bg-white text-zinc-950 hover:bg-zinc-200 font-bold px-10 rounded-full transition-transform hover:scale-105 shadow-xl">
                         <Link href={`/dashboard/module/${moduleId}`}>
                             Volver al módulo
                         </Link>

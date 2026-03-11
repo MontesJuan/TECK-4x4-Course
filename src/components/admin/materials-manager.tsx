@@ -40,7 +40,7 @@ export const MaterialsManager = ({ moduleId, materials }: { moduleId: string, ma
     }
 
     return (
-        <div className="space-y-4 bg-white text-black p-6 rounded shadow max-w-2xl mt-6">
+        <div className="space-y-4 bg-white text-zinc-950 p-6 rounded shadow max-w-2xl mt-6">
             <h3 className="text-lg font-semibold">Materiales de Estudio</h3>
 
             <div className="space-y-2">
